@@ -2,11 +2,11 @@ public abstract class Organism
 {
     // Properties
     public double Energy { get; private set; }
-    public double EnergyMax { get; private set; }
-    public bool IsAlive { get; set; }
-    public int Age { get; set; }
+    public double EnergyMax { get; }
+    public bool IsAlive { get; private set; }
+    public int Age { get; private set; }
     public int AgeMax { get; set; }
-    public int AdultAge { get; set; }
+    public int AdultAge { get; }
 
     // Methods
     public void UpdateEnergy(int amount)
@@ -16,10 +16,9 @@ public abstract class Organism
         {
             Energy = EnergyMax;
         }
-        else if (Energy < 0)
-        {
-            Energy = 0;
-            IsAlive = false;
+        else if (Energy <= 0)
+        { 
+            Die();
         }
     }    
     public void UpdateAge()
@@ -27,7 +26,7 @@ public abstract class Organism
         Age++;
         if (Age > AgeMax)
         {
-            IsAlive = false;
+            Die();
         }
     }
     public void Die()
@@ -36,6 +35,11 @@ public abstract class Organism
         Energy = 0;
         // add Nutrients to the environment
     }   
+    public void Metabolize()
+    {
+        UpdateEnergy(-AgeMax * SimulationConfig.StepEnergyCost);
+        UpdateAge();
+    }
     
 
     // Constructor
@@ -43,8 +47,8 @@ public abstract class Organism
     {
         this.Energy = Energy;
         this.EnergyMax = EnergyMax;
-        this.IsAlive = true;
-        this.Age = 0;
+        IsAlive = true;
+        Age = 0;
         this.AgeMax = AgeMax;
         this.AdultAge = AdultAge;
     }

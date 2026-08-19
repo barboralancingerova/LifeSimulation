@@ -1,11 +1,19 @@
 class Predator : Animal
 {
-    public Predator(double Energy, double EnergyMax) : base(Energy, EnergyMax)
+    // Constructor
+    public Predator(double Energy, double EnergyMax, int AgeMax) : base(Energy, EnergyMax, AgeMax)
     {
-        this.AgeMax = 20;
-        this.AdultAge = 5;
+        this.Energy = Energy;
+        this.EnergyMax = EnergyMax;
+        this.AgeMax = AgeMax;
+        this.AdultAge = SimulationConfig.CarnivoreAdultAge;
     }
 
+    // Methods
+    public override void Move(int x, int y)
+    {
+        // Implement movement logic for the predator
+    }
     public override void Eat(Organism prey)
     {
         if (prey is Prey)

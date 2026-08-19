@@ -1,8 +1,12 @@
 public class Herbivore : Animal
 {
     // Constructor
-    public Herbivore(double Energy, double EnergyMax) : base(Energy, EnergyMax)
+    public Herbivore(double Energy, double EnergyMax, int AgeMax) : base(Energy, EnergyMax, AgeMax)
     {
+        this.Energy = Energy;
+        this.EnergyMax = EnergyMax;
+        this.AgeMax = AgeMax;
+        this.AdultAge = SimulationConfig.HerbivoreAdultAge;
     }
 
     // Methods
@@ -10,7 +14,7 @@ public class Herbivore : Animal
     {
         if (prey.IsAlive)
         {
-            this.UpdateEnergy(prey.Energy * 0.3); // Herbivores gain 30% of prey's energy
+            this.UpdateEnergy(prey.Energy * SimulationConfig.PredationEfficiency);
             prey.Die();
         }
     }
