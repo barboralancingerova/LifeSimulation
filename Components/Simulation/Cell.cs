@@ -1,7 +1,7 @@
 public class Cell
 {
-    public Organism Occupant { get; set; }
-    public Nutrients Nutrients { get; set; }
+    public Organism? Occupant { get; set; }
+    public Nutrients? Nutrients { get; set; }
     public int X { get; private set; }
     public int Y { get; private set; }
 

@@ -57,39 +57,75 @@ public abstract class Organism
 public abstract class Animal : Organism
 {
     // Constructor
-    public Animal(double Energy, double EnergyMax, int AgeMax) : base(Energy, EnergyMax, AgeMax, 0)
-    {
-        this.Energy = Energy;
-        this.EnergyMax = EnergyMax;
-        this.AgeMax = AgeMax;
-    }
+    public Animal(double Energy, double EnergyMax, int AgeMax, int AdultAge) : base(Energy, EnergyMax, AgeMax, AdultAge)
+    { }
 
     // Abstract methods for animal behavior
     public abstract void Eat(Organism prey);
     public abstract void Move(int x, int y);
-    public abstract void Reproduce(Organism mate);
+    public abstract Animal? Reproduce(Organism mate);
     protected abstract Organism? FindAdjacentFood(List<ObservedCell> observations);
+    protected abstract Organism? FindAdjacentMate(List<ObservedCell> observations);
 
     // Simulation step
-    public void Act(Grid grid, int x, int y)
+    public Organism? Act(Grid grid, int x, int y)
     {
+        var observations = ScanSurroundings(grid, x, y, SimulationConfig.ScanningRadius);
+
         // Basal metabolism
         Metabolize();
 
         // Reflexes: Food
-        var observarions = ScanSurroundings(x, y, SimulationConfig.ScanningRadius);
-        var adjacentFood = FindAdjacentFoodType<Organism>(observations);
+        var adjacentFood = FindAdjacentFood(observations);
         if (adjacentFood != null)
         {
-            Eat(adjacentFood.Occupant);
-        }
-        else
-        {
-            Move(/*NN decides where to move*/);
+            Eat(adjacentFood);
         }
         
-        // Reflexes: Mates
+        // Reflexes: Mating
+        Organism? offspring = null;
+        if (Age >= AdultAge && Energy / EnergyMax >= SimulationConfig.ReproductionEnergyThreshold)
+        {
+            var mate = FindAdjacentMate(observations);
+            if (mate != null)
+            {
+                offspring = Reproduce(mate);
+            }
+        }
+
         // Strategy: Movement
+
+
+        return offspring; // Return offspring or null
+    }
+
+    // Searching for mates 
+    public Dictionary<Direction, DirectionStats> FindMates<T>(List<ObservedCell> observations) where T : Animal
+    {
+        return ScanByDirection(observations,
+            cell => cell.Occupant is T mate 
+            && mate.Age >= mate.AdultAge 
+            && mate.Energy/mate.EnergyMax >= SimulationConfig.ReproductionEnergyThreshold,
+            cell => cell.Occupant!.Energy);
+    }
+
+    public T? FindAdjacentMateType<T>(List<ObservedCell> observations) where T: Animal
+    {
+        T? adjacentMate = null;
+        foreach (ObservedCell cell in observations)
+        {
+            if (cell.Occupant is T mate 
+            && Math.Abs(cell.Dx) <= 1 && Math.Abs(cell.Dy) <= 1
+            && mate.Age >= mate.AdultAge 
+            && mate.Energy/mate.EnergyMax >= SimulationConfig.ReproductionEnergyThreshold)
+            {
+                if (adjacentMate == null || adjacentMate.Energy < mate.Energy)
+                {
+                    adjacentMate = (T)cell.Occupant;
+                }
+            }
+        }
+        return adjacentMate;
     }
 
     // Scanning surroundings
@@ -120,7 +156,7 @@ public abstract class Animal : Organism
             }      
         return adjacentFood;
     }   
-    public List<ObservedCell> ScanSurroundings(int x, int y, int radius) // returns a list of observed cells within the specified radius
+    public List<ObservedCell> ScanSurroundings(Grid grid, int x, int y, int radius) // returns a list of observed cells within the specified radius
     {
         var observations = new List<ObservedCell>();
         for (int dx = -radius; dx <= radius; dx++)
@@ -131,13 +167,13 @@ public abstract class Animal : Organism
 
                 int nx = x + dx;
                 int ny = y + dy;
-                if (nx < 0 || nx >= Grid.Width || ny < 0 || ny >= Grid.Height) continue;
+                if (nx < 0 || nx >= grid.Width || ny < 0 || ny >= grid.Height) continue;
 
                 observations.Add(new ObservedCell
                 {
                     Dx = dx,
                     Dy = dy,
-                    Occupant = Grid.Cells[nx, ny].Occupant,
+                    Occupant = grid.Cells[nx, ny].Occupant,
                 });
             }
         }
@@ -222,12 +258,4 @@ public static class DirectionCoords
         return inputs;
     }
 
-    // Searching for mates 
-    public Dictionary<Direction, DirectionStats> FindMates<T>(List<ObservedCell> observations) where T : Animal
-    {
-        return ScanByDirection(observations,
-            cell => cell.Occupant is T mate 
-            && mate.Age >= mate.AdultAge 
-            && mate.Energy/mate.EnergyMax >= SimulationConfig.ReproductionEnergyThreshold,
-            cell => cell.Occupant.Energy);
-    }
+}

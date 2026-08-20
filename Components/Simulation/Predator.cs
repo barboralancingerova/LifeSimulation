@@ -13,14 +13,26 @@ class Predator : Animal
             prey.Die();
         }
     }
+    public override Animal? Reproduce(Organism mate)
+    {
+        if (Energy / EnergyMax < SimulationConfig.ReproductionEnergyThreshold 
+        || mate.Energy / mate.EnergyMax < SimulationConfig.ReproductionEnergyThreshold
+        || mate is not Predator)
+        {
+            return null; 
+        }
+        this.UpdateEnergy(-EnergyMax * SimulationConfig.ReproductionEnergyCost);
+        mate.UpdateEnergy(-mate.EnergyMax * SimulationConfig.ReproductionEnergyCost);
+        var offspring = new Predator(SimulationConfig.NewbornEnergyFraction * EnergyMax, EnergyMax, AgeMax);
+        return offspring;
+    }
     public override void Move(int x, int y)
     {
         // Implement movement logic for the predator
     }
-    public override void Reproduce(Organism mate)
-    {
-        // Implement reproduction logic for the predator
-    }
     protected override Organism? FindAdjacentFood(List<ObservedCell> observations)
         => FindAdjacentFoodType<Herbivore>(observations);
+
+    protected override Organism? FindAdjacentMate(List<ObservedCell> observations)
+        => FindAdjacentMateType<Predator>(observations);
 }

@@ -13,6 +13,7 @@ public static class SimulationConfig
     public  const double MovementEnergyCost = 0.02; // Energy cost for movement
     public const double ReproductionEnergyCost = 0.3; // Energy cost for reproduction
     public const double ReproductionEnergyThreshold = 0.8; // Minimum energy level required for reproduction
+    public const double NewbornEnergyFraction = 0.3; // Fraction of maximum energy that a newborn organism starts with
 
     // Adult ages
     public const int ProducerAdultAge = 8; // Age at which producers reach adulthood

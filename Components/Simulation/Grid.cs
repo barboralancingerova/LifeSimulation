@@ -1,4 +1,4 @@
-class Grid 
+public class Grid 
 {
     public int Width { get; private set; }
     public int Height { get; private set; }
@@ -38,6 +38,10 @@ class Grid
                 if (occupant is Animal animal)
                 {
                     animal.Act(this, x, y); // "this" for the Grid
+                }
+                else if (occupant is Producer producer)
+                {
+                    producer.Act(this, x, y);
                 }
             }
         }

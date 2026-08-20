@@ -1,6 +1,6 @@
 public abstract class Energy
     {
-        public double EnergyAmount { get; private set; }
+        public double EnergyAmount { get; protected set; }
 
         public Energy(double energyAmount)
         {
@@ -11,16 +11,12 @@ public abstract class Energy
 public class Nutrients : Energy
     {
         public Nutrients(double energyAmount) : base(energyAmount)
-        {
-            EnergyAmount = energyAmount;
-        }
+        { }
     }
 public class Sunlight : Energy
     {
         public Sunlight(double energyAmount) : base(energyAmount)
-        {
-            EnergyAmount = energyAmount;
-        }
+        { }
         public void UpdateEnergy(double amount)
         {
             if (EnergyAmount + amount > SimulationConfig.SunlightMaxEnergy)
