@@ -1,13 +1,8 @@
 public class Producer: Organism
 {
     // Constructor
-    public Producer(int Energy, int EnergyMax, int AgeMax) : base(Energy, EnergyMax, AgeMax)
-    {
-        this.Energy = Energy;
-        this.EnergyMax = EnergyMax;
-        this.AgeMax = AgeMax;
-        this.AdultAge = SimulationConfig.ProducerAdultAge;
-    }
+    public Producer(double energy, double energyMax, int ageMax) : base(energy, energyMax, age              Max, SimulationConfig.ProducerAdultAge)
+    { }
 
     // Methods
     public void Photosynthesize()

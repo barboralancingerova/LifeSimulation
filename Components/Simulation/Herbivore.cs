@@ -1,18 +1,13 @@
 public class Herbivore : Animal
 {
     // Constructor
-    public Herbivore(double Energy, double EnergyMax, int AgeMax) : base(Energy, EnergyMax, AgeMax)
-    {
-        this.Energy = Energy;
-        this.EnergyMax = EnergyMax;
-        this.AgeMax = AgeMax;
-        this.AdultAge = SimulationConfig.HerbivoreAdultAge;
-    }
+    public Herbivore(double energy, double energyMax, int ageMax) : base(energy, energyMax, ageMax, SimulationConfig.HerbivoreAdultAge)
+    { }
 
     // Methods
-    public override void Eat(Producer prey)
+    public override void Eat(Organism prey)
     {
-        if (prey.IsAlive)
+        if (prey.IsAlive && prey is Producer)
         {
             this.UpdateEnergy(prey.Energy * SimulationConfig.PredationEfficiency);
             prey.Die();
@@ -22,8 +17,10 @@ public class Herbivore : Animal
     {
         // Implement movement logic for the herbivore
     }
-    public override void Reproduce()
+    public override void Reproduce(Herbivore mate)
     {
         // Implement reproduction logic for the herbivore
     }
+    protected override Organism? FindAdjacentFood(List<ObservedCell> observations)
+        => FindAdjacentFoodType<Producer>(observations);
 }

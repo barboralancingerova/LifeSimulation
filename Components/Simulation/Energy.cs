@@ -23,7 +23,7 @@ public class Sunlight : Energy
         }
         public void UpdateEnergy(double amount)
         {
-            if EnergyAmount + amount > SimulationConfig.SunlightMaxEnergy
+            if (EnergyAmount + amount > SimulationConfig.SunlightMaxEnergy)
             {
                 EnergyAmount = SimulationConfig.SunlightMaxEnergy;
             }
