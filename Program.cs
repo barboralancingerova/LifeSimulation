@@ -1,5 +1,22 @@
 using GameOfLife.Components;
 
+#if DEBUG
+var grid = new Grid(Config.GridWidth, Config.GridHeight); 
+grid.InitializePopulation(Config.ProducerChance, Config.HerbivoreChance, Config.PredatorChance);
+
+int stepNumber = 0;
+while (true)
+{
+    grid.Step();
+    stepNumber++;
+    grid.PrintStatus(stepNumber);
+    Console.WriteLine("Stiskni Enter pro další krok, nebo napiš 'q' pro ukončení testu.");
+    var input = Console.ReadLine();
+    if (input == "q") break;
+}
+return;
+#endif
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -25,3 +42,5 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+

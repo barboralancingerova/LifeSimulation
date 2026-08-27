@@ -42,12 +42,10 @@ public abstract class Organism
     public void Die()
     {
         IsAlive = false;
-        Energy = 0;
-        // add Nutrients to the environment
     }   
     public void Metabolize()
     {
-        UpdateEnergy(-EnergyMax * SimulationConfig.StepEnergyCost);
+        UpdateEnergy(-EnergyMax * Config.StepEnergyCost);
         UpdateAge();
     }
     
@@ -62,7 +60,7 @@ public abstract class Animal : Organism
 
     // Abstract methods for animal behavior
     public abstract void Eat(Organism prey);
-    public abstract void Move(int x, int y);
+    public abstract void Move(Grid grid, int x, int y);
     public abstract Animal? Reproduce(Organism mate);
     protected abstract Organism? FindAdjacentFood(List<ObservedCell> observations);
     protected abstract Organism? FindAdjacentMate(List<ObservedCell> observations);
@@ -70,31 +68,32 @@ public abstract class Animal : Organism
     // Simulation step
     public Organism? Act(Grid grid, int x, int y)
     {
-        var observations = ScanSurroundings(grid, x, y, SimulationConfig.ScanningRadius);
-
         // Basal metabolism
-        Metabolize();
+        //TODO
+        // original: Metabolize();
+        if (this is Herbivore) Metabolize();
+
+        var observations = ScanSurroundings(grid, x, y, Config.ScanningRadius);
 
         // Reflexes: Food
         var adjacentFood = FindAdjacentFood(observations);
+        bool ate = false;
         if (adjacentFood != null)
         {
             Eat(adjacentFood);
+            ate = true;
         }
         
         // Reflexes: Mating
         Organism? offspring = null;
-        if (Age >= AdultAge && Energy / EnergyMax >= SimulationConfig.ReproductionEnergyThreshold)
+        if (Age >= AdultAge && Energy / EnergyMax >= Config.ReproductionEnergyThreshold)
         {
             var mate = FindAdjacentMate(observations);
-            if (mate != null)
-            {
-                offspring = Reproduce(mate);
-            }
+            if (mate != null) offspring = Reproduce(mate);
         }
 
         // Strategy: Movement
-
+        if (!ate) Move(grid, x, y);
 
         return offspring; // Return offspring or null
     }
@@ -105,7 +104,7 @@ public abstract class Animal : Organism
         return ScanByDirection(observations,
             cell => cell.Occupant is T mate 
             && mate.Age >= mate.AdultAge 
-            && mate.Energy/mate.EnergyMax >= SimulationConfig.ReproductionEnergyThreshold,
+            && mate.Energy/mate.EnergyMax >= Config.ReproductionEnergyThreshold,
             cell => cell.Occupant!.Energy);
     }
 
@@ -117,7 +116,7 @@ public abstract class Animal : Organism
             if (cell.Occupant is T mate 
             && Math.Abs(cell.Dx) <= 1 && Math.Abs(cell.Dy) <= 1
             && mate.Age >= mate.AdultAge 
-            && mate.Energy/mate.EnergyMax >= SimulationConfig.ReproductionEnergyThreshold)
+            && mate.Energy/mate.EnergyMax >= Config.ReproductionEnergyThreshold)
             {
                 if (adjacentMate == null || adjacentMate.Energy < mate.Energy)
                 {
