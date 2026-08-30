@@ -1,9 +1,12 @@
 public class Herbivore : Animal
 {
     // Constructor
-    public Herbivore(double energy, double energyMax, int ageMax, Genome genome) : base(energy, energyMax, ageMax, Config.HerbivoreAdultAge, genome)
-    { }
-
+    public Herbivore(double energy, Genome genome) : base(
+        energy, 
+        genome.Genes[(int)GeneIndex.EnergyMax], 
+        (int)genome.Genes[(int)GeneIndex.AgeMax], 
+        Config.HerbivoreAdultAge, 
+        genome){ }
     // Methods
     public override void Eat(Organism prey)
     {
@@ -31,7 +34,7 @@ public class Herbivore : Animal
             Config.HerbivoreMinStepEnergyCost, Config.HerbivoreMaxStepEnergyCost, 
             Config.HerbivoreMinMovementEnergyCost, Config.HerbivoreMaxMovementEnergyCost);
 
-        var offspring = new Herbivore(Config.NewbornEnergyFraction * EnergyMax, EnergyMax, AgeMax, offspringGenome);
+        var offspring = new Herbivore(Config.NewbornEnergyFraction * EnergyMax, offspringGenome);
         return offspring;
     }
     public override void Move(Grid grid, int x, int y)

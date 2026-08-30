@@ -57,7 +57,7 @@ public abstract class Organism
 public abstract class Animal : Organism
 {
     // Constructor
-    public Animal(double Energy, double EnergyMax, int AgeMax, int AdultAge, Genome genome) : base(Energy, EnergyMax, AgeMax, AdultAge, genome)
+    public Animal(double energy, double energyMax, int ageMax, int adultAge, Genome genome) : base(energy, energyMax, ageMax, adultAge, genome)
     { }
 
     // Abstract methods for animal behavior

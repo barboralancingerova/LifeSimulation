@@ -1,9 +1,12 @@
 class Predator : Animal
 {
     // Constructor
-    public Predator(double energy, double energyMax, int ageMax, Genome genome) : base(energy, energyMax, ageMax, Config.PredatorAdultAge, genome)
-    { }
-
+    public Predator(double energy, Genome genome) : base(
+        energy, 
+        genome.Genes[(int)GeneIndex.EnergyMax], 
+        (int)genome.Genes[(int)GeneIndex.AgeMax], 
+        Config.PredatorAdultAge, 
+        genome){ }
     // Methods
     public override void Eat(Organism prey)
     {
@@ -33,7 +36,7 @@ class Predator : Animal
             Config.PredatorMinStepEnergyCost, Config.PredatorMaxStepEnergyCost, 
             Config.PredatorMinMovementEnergyCost, Config.PredatorMaxMovementEnergyCost);
 
-        var offspring = new Predator(Config.NewbornEnergyFraction * EnergyMax, EnergyMax, AgeMax, offspringGenome);
+        var offspring = new Predator(Config.NewbornEnergyFraction * EnergyMax, offspringGenome);
         return offspring;
     }
     public override void Move(Grid grid, int x, int y)

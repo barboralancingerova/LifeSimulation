@@ -122,15 +122,15 @@ public class Grid
 
             if (roll < producerChance)
             {
-                Cells[x, y].Occupant = new Producer(Config.ProducerEnergyMax * 0.5, Config.ProducerEnergyMax, Config.ProducerAgeMax, Genome.CreateRandomGenome_Producer());
+                Cells[x, y].Occupant = new Producer(Config.ProducerEnergyMax * 0.5, Genome.CreateRandomGenome_Producer());
             }
             else if (roll < producerChance + herbivoreChance)
             {
-                Cells[x, y].Occupant = new Herbivore(Config.HerbivoreEnergyMax * 0.5, Config.HerbivoreEnergyMax, Config.HerbivoreAgeMax, Genome.CreateRandomGenome_Herbivore());
+                Cells[x, y].Occupant = new Herbivore(Config.HerbivoreEnergyMax * 0.5, Genome.CreateRandomGenome_Herbivore());
             }
             else if (roll < producerChance + herbivoreChance + predatorChance)
             {
-                Cells[x, y].Occupant = new Predator(Config.PredatorEnergyMax * 0.5, Config.PredatorEnergyMax, Config.PredatorAgeMax, Genome.CreateRandomGenome_Predator());
+                Cells[x, y].Occupant = new Predator(Config.PredatorEnergyMax * 0.5, Genome.CreateRandomGenome_Predator());
             }
             // else: stays empty
         }

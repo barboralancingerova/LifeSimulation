@@ -1,8 +1,12 @@
 public class Producer: Organism
 {
     // Constructor
-    public Producer(double energy, double energyMax, int ageMax, Genome genome) : base(energy, energyMax, ageMax, Config.ProducerAdultAge, genome)
-    { }
+    public Producer(double energy, Genome genome) : base(
+        energy, 
+        genome.Genes[(int)GeneIndex.EnergyMax], 
+        (int)genome.Genes[(int)GeneIndex.AgeMax], 
+        Config.ProducerAdultAge, 
+        genome){ }
 
     // Methods
     public void Photosynthesize(double sunlight)
@@ -23,7 +27,7 @@ public class Producer: Organism
                 Config.ProducerMinEnergyMax, Config.ProducerMaxEnergyMax, 
                 Config.ProducerMinStepEnergyCost, Config.ProducerMaxStepEnergyCost);
 
-            offspring = new Producer(Config.NewbornEnergyFraction*EnergyMax, EnergyMax, AgeMax, offspringGenome);
+            offspring = new Producer(Config.NewbornEnergyFraction*EnergyMax, offspringGenome);
         }
         return offspring;
     }
