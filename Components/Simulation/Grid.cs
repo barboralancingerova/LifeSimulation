@@ -1,3 +1,5 @@
+using System.Data;
+
 public class Grid 
 {
     public int Width { get; private set; }
@@ -120,17 +122,17 @@ public class Grid
 
             if (roll < producerChance)
             {
-                Cells[x, y].Occupant = new Producer(Config.ProducerEnergyMax * 0.5, Config.ProducerEnergyMax, Config.ProducerAgeMax);
+                Cells[x, y].Occupant = new Producer(Config.ProducerEnergyMax * 0.5, Config.ProducerEnergyMax, Config.ProducerAgeMax, Genome.CreateRandomGenome_Producer());
             }
             else if (roll < producerChance + herbivoreChance)
             {
-                Cells[x, y].Occupant = new Herbivore(Config.HerbivoreEnergyMax * 0.5, Config.HerbivoreEnergyMax, Config.HerbivoreAgeMax);
+                Cells[x, y].Occupant = new Herbivore(Config.HerbivoreEnergyMax * 0.5, Config.HerbivoreEnergyMax, Config.HerbivoreAgeMax, Genome.CreateRandomGenome_Herbivore());
             }
             else if (roll < producerChance + herbivoreChance + predatorChance)
             {
-                Cells[x, y].Occupant = new Predator(Config.PredatorEnergyMax * 0.5, Config.PredatorEnergyMax, Config.PredatorAgeMax);
+                Cells[x, y].Occupant = new Predator(Config.PredatorEnergyMax * 0.5, Config.PredatorEnergyMax, Config.PredatorAgeMax, Genome.CreateRandomGenome_Predator());
             }
-            // jinak zůstává prázdná
+            // else: stays empty
         }
     }
 }

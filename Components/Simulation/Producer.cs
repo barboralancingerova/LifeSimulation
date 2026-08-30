@@ -1,7 +1,7 @@
 public class Producer: Organism
 {
     // Constructor
-    public Producer(double energy, double energyMax, int ageMax) : base(energy, energyMax, ageMax, Config.ProducerAdultAge)
+    public Producer(double energy, double energyMax, int ageMax, Genome genome) : base(energy, energyMax, ageMax, Config.ProducerAdultAge, genome)
     { }
 
     // Methods
@@ -16,7 +16,14 @@ public class Producer: Organism
         if (Energy >= EnergyMax * Config.ReproductionEnergyThreshold)
         {
             UpdateEnergy(-Config.ReproductionEnergyCost*EnergyMax);
-            offspring = new Producer(Config.NewbornEnergyFraction*EnergyMax, EnergyMax, AgeMax);
+
+            var offspringGenome = new Genome(3);
+            offspringGenome.Mutate(this, Config.MutationSigma,
+                Config.ProducerMinAgeMax, Config.ProducerMaxAgeMax, 
+                Config.ProducerMinEnergyMax, Config.ProducerMaxEnergyMax, 
+                Config.ProducerMinStepEnergyCost, Config.ProducerMaxStepEnergyCost);
+
+            offspring = new Producer(Config.NewbornEnergyFraction*EnergyMax, EnergyMax, AgeMax, offspringGenome);
         }
         return offspring;
     }

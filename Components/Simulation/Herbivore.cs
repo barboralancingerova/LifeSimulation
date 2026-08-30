@@ -1,7 +1,7 @@
 public class Herbivore : Animal
 {
     // Constructor
-    public Herbivore(double energy, double energyMax, int ageMax) : base(energy, energyMax, ageMax, Config.HerbivoreAdultAge)
+    public Herbivore(double energy, double energyMax, int ageMax, Genome genome) : base(energy, energyMax, ageMax, Config.HerbivoreAdultAge, genome)
     { }
 
     // Methods
@@ -23,7 +23,15 @@ public class Herbivore : Animal
         }
         this.UpdateEnergy(-EnergyMax * Config.ReproductionEnergyCost);
         mate.UpdateEnergy(-mate.EnergyMax * Config.ReproductionEnergyCost);
-        var offspring = new Herbivore(Config.NewbornEnergyFraction * EnergyMax, EnergyMax, AgeMax);
+
+        var offspringGenome = new Genome(4);
+        offspringGenome.Crossover(this, (Animal)mate, Config.MutationSigma, 
+            Config.HerbivoreMinAgeMax, Config.HerbivoreMaxAgeMax, 
+            Config.HerbivoreMinEnergyMax, Config.HerbivoreMaxEnergyMax, 
+            Config.HerbivoreMinStepEnergyCost, Config.HerbivoreMaxStepEnergyCost, 
+            Config.HerbivoreMinMovementEnergyCost, Config.HerbivoreMaxMovementEnergyCost);
+
+        var offspring = new Herbivore(Config.NewbornEnergyFraction * EnergyMax, EnergyMax, AgeMax, offspringGenome);
         return offspring;
     }
     public override void Move(Grid grid, int x, int y)

@@ -7,16 +7,18 @@ public abstract class Organism
     public int Age { get; private set; }
     public int AgeMax { get; set; }
     public int AdultAge { get; }
+    public Genome Genome {get; }
 
     // Constructor
-    public Organism(double Energy, double EnergyMax, int AgeMax, int AdultAge)
+    public Organism(double energy, double energyMax, int ageMax, int adultAge, Genome genome)
     {
-        this.Energy = Energy;
-        this.EnergyMax = EnergyMax;
+        Energy = energy;
+        EnergyMax = energyMax;
+        AgeMax = ageMax;
+        AdultAge = adultAge;
         IsAlive = true;
         Age = 0;
-        this.AgeMax = AgeMax;
-        this.AdultAge = AdultAge;
+        Genome = genome;  
     }
     // Methods
     public void UpdateEnergy(double amount)
@@ -55,7 +57,7 @@ public abstract class Organism
 public abstract class Animal : Organism
 {
     // Constructor
-    public Animal(double Energy, double EnergyMax, int AgeMax, int AdultAge) : base(Energy, EnergyMax, AgeMax, AdultAge)
+    public Animal(double Energy, double EnergyMax, int AgeMax, int AdultAge, Genome genome) : base(Energy, EnergyMax, AgeMax, AdultAge, genome)
     { }
 
     // Abstract methods for animal behavior
@@ -69,9 +71,7 @@ public abstract class Animal : Organism
     public Organism? Act(Grid grid, int x, int y)
     {
         // Basal metabolism
-        //TODO
-        // original: Metabolize();
-        if (this is Herbivore) Metabolize();
+        Metabolize();
 
         var observations = ScanSurroundings(grid, x, y, Config.ScanningRadius);
 
