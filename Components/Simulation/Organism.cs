@@ -63,13 +63,30 @@ public abstract class Animal : Organism
 
     // Abstract methods for animal behavior
     public abstract void Eat(Organism prey);
-    public abstract void Move(Grid grid, int x, int y);
     public abstract Animal? Reproduce(Organism mate);
     protected abstract Organism? FindAdjacentFood(List<ObservedCell> observations);
     protected abstract Organism? FindAdjacentMate(List<ObservedCell> observations);
     protected abstract Func<ObservedCell, bool> MatchesFood();
     protected abstract Func<ObservedCell, bool> MatchesThreat();
     protected abstract Func<ObservedCell, bool> MatchesMate();
+
+    public void Move(Grid grid, int x, int y)
+    {
+        double[] input = BuildNeuralInputs(grid, x, y);
+        double[] weights = ((AnimalGenome)Genome).Weights;
+        double[] output = NeuralNetwork.Forward(input, weights, Config.NNHiddenSize, Config.NNOutputSize);
+
+        int bestDirectionIndex = Array.IndexOf(output, output.Max());
+
+        var allDirections = Enum.GetValues<Direction>();
+        Direction bestDirection = allDirections[bestDirectionIndex];
+        var (dx, dy) = DirectionCoords.Coords[bestDirection];
+
+        if (grid.MoveOrganism(this, x, y, x + dx, y + dy))
+        {
+            UpdateEnergy(-Config.MovementEnergyCost*EnergyMax);
+        }
+    }
 
     // Simulation step
     public Organism? Act(Grid grid, int x, int y)

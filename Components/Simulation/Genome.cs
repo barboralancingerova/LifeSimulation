@@ -77,9 +77,9 @@ public class Genome
         return genome;
     }
 
-    public static Genome CreateRandomGenome_Herbivore()
+    public static AnimalGenome CreateRandomGenome_Herbivore()
     {
-        var genome = new Genome(4);
+        var genome = new AnimalGenome(4, Config.NNWeightsCount);
         genome.Genes[(int)GeneIndex.AgeMax] = Math.Clamp(
             GaussianRNG(Grid.Rng, Config.HerbivoreAgeMax, Config.MutationSigma),
             Config.HerbivoreMinAgeMax, Config.HerbivoreMaxAgeMax);
@@ -92,12 +92,17 @@ public class Genome
         genome.Genes[(int)GeneIndex.MovementEnergyCost] = Math.Clamp(
             GaussianRNG(Grid.Rng, Config.MovementEnergyCost, Config.MutationSigma),
             Config.HerbivoreMinMovementEnergyCost, Config.HerbivoreMaxMovementEnergyCost);
+
+        for (int weight = 0; weight < Config.NNWeightsCount; weight++)
+        {
+            genome.Weights[weight] = GaussianRNG(Grid.Rng, 0, Config.WeightInicializationSigma); 
+        }
         return genome;
     }
 
-    public static Genome CreateRandomGenome_Predator()
+    public static AnimalGenome CreateRandomGenome_Predator()
     {
-        var genome = new Genome(4);
+        var genome = new AnimalGenome(4, Config.NNWeightsCount);
         genome.Genes[(int)GeneIndex.AgeMax] = Math.Clamp(
             GaussianRNG(Grid.Rng, Config.PredatorAgeMax, Config.MutationSigma),
             Config.PredatorMinAgeMax, Config.PredatorMaxAgeMax);
@@ -110,6 +115,10 @@ public class Genome
         genome.Genes[(int)GeneIndex.MovementEnergyCost] = Math.Clamp(
             GaussianRNG(Grid.Rng, Config.MovementEnergyCost, Config.MutationSigma),
             Config.PredatorMinMovementEnergyCost, Config.PredatorMaxMovementEnergyCost);
+        for (int weight = 0; weight < Config.NNWeightsCount; weight++)
+        {
+            genome.Weights[weight] = GaussianRNG(Grid.Rng, 0, Config.WeightInicializationSigma); 
+        }
         return genome;
     }
 }
@@ -146,4 +155,5 @@ public class AnimalGenome: Genome
             sigma, minMoveCost, maxMoveCost);
         MutateWeights(parent1, parent2, sigma, weightBound);
     }
+
 }

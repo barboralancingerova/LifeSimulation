@@ -79,10 +79,10 @@ public static class Config
     
     // NN params
     public const double WeightBound = 2;
-    public const int NeuralNetworkInputCount = 33;  // nebo jiné číslo, podle skutečného součtu
-    public const int NeuralNetworkHiddenCount = 16;
-    public const int NeuralNetworkOutputCount = 8;
-    public const int WeightsCount = (NeuralNetworkInputCount * NeuralNetworkHiddenCount) 
-                                + (NeuralNetworkHiddenCount * NeuralNetworkOutputCount);
+    public const int NNInputSize = 33;  // 16(food) + 8(threat) + 8(mate) + 1(energy)
+    public const int NNHiddenSize = 16;
+    public const int NNOutputSize = 8;
+    public const int NNWeightsCount = (NNInputSize * NNHiddenSize) + (NNHiddenSize * NNOutputSize);
+    public const double WeightInicializationSigma = 5;
 
 }

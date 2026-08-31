@@ -29,7 +29,7 @@ class Predator : Animal
         this.UpdateEnergy(-EnergyMax * Config.ReproductionEnergyCost);
         mate.UpdateEnergy(-mate.EnergyMax * Config.ReproductionEnergyCost);
 
-        var offspringGenome = new AnimalGenome(4, Config.WeightsCount);
+        var offspringGenome = new AnimalGenome(4, Config.NNWeightsCount);
         offspringGenome.Crossover(this, (Animal)mate, Config.MutationSigma, 
             Config.PredatorMinAgeMax, Config.PredatorMaxAgeMax, 
             Config.PredatorMinEnergyMax, Config.PredatorMaxEnergyMax, 
@@ -39,15 +39,6 @@ class Predator : Animal
 
         var offspring = new Predator(Config.NewbornEnergyFraction * EnergyMax, offspringGenome);
         return offspring;
-    }
-    public override void Move(Grid grid, int x, int y)
-    {
-        var directions = DirectionCoords.Coords.Values.ToList();
-        var (dx, dy) = directions[Grid.Rng.Next(directions.Count)];
-        if (grid.MoveOrganism(this, x, y, x + dx, y + dy))
-        {
-            UpdateEnergy(-Config.MovementEnergyCost*EnergyMax);
-        }
     }
     
     protected override Organism? FindAdjacentFood(List<ObservedCell> observations)
