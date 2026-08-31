@@ -49,31 +49,40 @@ public static class Config
     // Genetic params
     public const double MutationSigma = 0.05; // 5% standard dev.
 
-    // Producers (default: AgeMax=40, EnergyMax=1000, StepEnergyCost=0.01)
-    public const double ProducerMinAgeMax = 20;
-    public const double ProducerMaxAgeMax = 60;
-    public const double ProducerMinEnergyMax = 500;
-    public const double ProducerMaxEnergyMax = 1500;
-    public const double ProducerMinStepEnergyCost = 0.005;
-    public const double ProducerMaxStepEnergyCost = 0.02;
+        // Producers (default: AgeMax=40, EnergyMax=1000, StepEnergyCost=0.01)
+        public const double ProducerMinAgeMax = 20;
+        public const double ProducerMaxAgeMax = 60;
+        public const double ProducerMinEnergyMax = 500;
+        public const double ProducerMaxEnergyMax = 1500;
+        public const double ProducerMinStepEnergyCost = 0.005;
+        public const double ProducerMaxStepEnergyCost = 0.02;
 
-    // Herbivores (default:: AgeMax=80, EnergyMax=2000, StepEnergyCost=0.01, MovementEnergyCost=0.02)
-    public const double HerbivoreMinAgeMax = 40;
-    public const double HerbivoreMaxAgeMax = 120;
-    public const double HerbivoreMinEnergyMax = 1000;
-    public const double HerbivoreMaxEnergyMax = 3000;
-    public const double HerbivoreMinStepEnergyCost = 0.005;
-    public const double HerbivoreMaxStepEnergyCost = 0.02;
-    public const double HerbivoreMinMovementEnergyCost = 0.01;
-    public const double HerbivoreMaxMovementEnergyCost = 0.04;
+        // Herbivores (default:: AgeMax=80, EnergyMax=2000, StepEnergyCost=0.01, MovementEnergyCost=0.02)
+        public const double HerbivoreMinAgeMax = 40;
+        public const double HerbivoreMaxAgeMax = 120;
+        public const double HerbivoreMinEnergyMax = 1000;
+        public const double HerbivoreMaxEnergyMax = 3000;
+        public const double HerbivoreMinStepEnergyCost = 0.005;
+        public const double HerbivoreMaxStepEnergyCost = 0.02;
+        public const double HerbivoreMinMovementEnergyCost = 0.01;
+        public const double HerbivoreMaxMovementEnergyCost = 0.04;
 
-    // Predators (default: AgeMax=150, EnergyMax=3500, StepEnergyCost=0.01, MovementEnergyCost=0.02)
-    public const double PredatorMinAgeMax = 75;
-    public const double PredatorMaxAgeMax = 225;
-    public const double PredatorMinEnergyMax = 1750;
-    public const double PredatorMaxEnergyMax = 5250;
-    public const double PredatorMinStepEnergyCost = 0.005;
-    public const double PredatorMaxStepEnergyCost = 0.02;
-    public const double PredatorMinMovementEnergyCost = 0.01;
-    public const double PredatorMaxMovementEnergyCost = 0.04;
+        // Predators (default: AgeMax=150, EnergyMax=3500, StepEnergyCost=0.01, MovementEnergyCost=0.02)
+        public const double PredatorMinAgeMax = 75;
+        public const double PredatorMaxAgeMax = 225;
+        public const double PredatorMinEnergyMax = 1750;
+        public const double PredatorMaxEnergyMax = 5250;
+        public const double PredatorMinStepEnergyCost = 0.005;
+        public const double PredatorMaxStepEnergyCost = 0.02;
+        public const double PredatorMinMovementEnergyCost = 0.01;
+        public const double PredatorMaxMovementEnergyCost = 0.04;
+    
+    // NN params
+    public const double WeightBound = 2;
+    public const int NeuralNetworkInputCount = 33;  // nebo jiné číslo, podle skutečného součtu
+    public const int NeuralNetworkHiddenCount = 16;
+    public const int NeuralNetworkOutputCount = 8;
+    public const int WeightsCount = (NeuralNetworkInputCount * NeuralNetworkHiddenCount) 
+                                + (NeuralNetworkHiddenCount * NeuralNetworkOutputCount);
+
 }

@@ -27,12 +27,13 @@ public class Herbivore : Animal
         this.UpdateEnergy(-EnergyMax * Config.ReproductionEnergyCost);
         mate.UpdateEnergy(-mate.EnergyMax * Config.ReproductionEnergyCost);
 
-        var offspringGenome = new Genome(4);
+        var offspringGenome = new AnimalGenome(4, Config.WeightsCount);
         offspringGenome.Crossover(this, (Animal)mate, Config.MutationSigma, 
             Config.HerbivoreMinAgeMax, Config.HerbivoreMaxAgeMax, 
             Config.HerbivoreMinEnergyMax, Config.HerbivoreMaxEnergyMax, 
             Config.HerbivoreMinStepEnergyCost, Config.HerbivoreMaxStepEnergyCost, 
-            Config.HerbivoreMinMovementEnergyCost, Config.HerbivoreMaxMovementEnergyCost);
+            Config.HerbivoreMinMovementEnergyCost, Config.HerbivoreMaxMovementEnergyCost,
+            Config.WeightBound);
 
         var offspring = new Herbivore(Config.NewbornEnergyFraction * EnergyMax, offspringGenome);
         return offspring;
@@ -51,4 +52,14 @@ public class Herbivore : Animal
 
     protected override Organism? FindAdjacentMate(List<ObservedCell> observations)
         => FindAdjacentMateType<Herbivore>(observations);
+
+    // 
+    protected override Func<ObservedCell, bool> MatchesFood()
+        => cell => cell.Occupant is Producer;
+    protected override Func<ObservedCell, bool> MatchesThreat()
+        => cell => cell.Occupant is Predator;
+    protected override Func<ObservedCell, bool> MatchesMate()
+        => cell => cell.Occupant is Herbivore mate 
+        && mate.Age >= mate.AdultAge 
+        && mate.Energy / mate.EnergyMax >= Config.ReproductionEnergyThreshold;
 }

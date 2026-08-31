@@ -29,12 +29,13 @@ class Predator : Animal
         this.UpdateEnergy(-EnergyMax * Config.ReproductionEnergyCost);
         mate.UpdateEnergy(-mate.EnergyMax * Config.ReproductionEnergyCost);
 
-        var offspringGenome = new Genome(4);
+        var offspringGenome = new AnimalGenome(4, Config.WeightsCount);
         offspringGenome.Crossover(this, (Animal)mate, Config.MutationSigma, 
             Config.PredatorMinAgeMax, Config.PredatorMaxAgeMax, 
             Config.PredatorMinEnergyMax, Config.PredatorMaxEnergyMax, 
             Config.PredatorMinStepEnergyCost, Config.PredatorMaxStepEnergyCost, 
-            Config.PredatorMinMovementEnergyCost, Config.PredatorMaxMovementEnergyCost);
+            Config.PredatorMinMovementEnergyCost, Config.PredatorMaxMovementEnergyCost,
+            Config.WeightBound);
 
         var offspring = new Predator(Config.NewbornEnergyFraction * EnergyMax, offspringGenome);
         return offspring;
@@ -54,4 +55,14 @@ class Predator : Animal
 
     protected override Organism? FindAdjacentMate(List<ObservedCell> observations)
         => FindAdjacentMateType<Predator>(observations);
+
+    //
+    protected override Func<ObservedCell, bool> MatchesFood()
+        => cell => cell.Occupant is Herbivore;
+    protected override Func<ObservedCell, bool> MatchesThreat()
+        => cell => false;
+    protected override Func<ObservedCell, bool> MatchesMate()
+        => cell => cell.Occupant is Predator mate 
+        && mate.Age >= mate.AdultAge 
+        && mate.Energy / mate.EnergyMax >= Config.ReproductionEnergyThreshold;
 }

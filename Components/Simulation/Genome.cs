@@ -5,15 +5,14 @@ public enum GeneIndex
 
 public class Genome
 {
-    public double[] Genes {get; private set;
-}
+    public double[] Genes {get; private set; }
 
     public Genome(int genomeLength)
     {
         Genes = new double[genomeLength];
     }
 
-    private double Recombine(double maternalGene, double paternalGene, double sigma, double min, double max)
+    protected double Recombine(double maternalGene, double paternalGene, double sigma, double min, double max)
     {
         double value = (maternalGene + paternalGene) / 2 + GaussianRNG(Grid.Rng, 0, sigma);
         return Math.Clamp(value, min, max);
@@ -35,8 +34,7 @@ public class Genome
         Animal parent1, Animal parent2, double sigma, 
         double minAgeMax, double maxAgeMax,
         double minEnergyMax, double maxEnergyMax,
-        double minStepCost, double maxStepCost,
-        double minMoveCost, double maxMoveCost
+        double minStepCost, double maxStepCost
     )
     {
         Genes[(int)GeneIndex.AgeMax] = Recombine(
@@ -53,12 +51,8 @@ public class Genome
             parent1.Genome.Genes[(int)GeneIndex.StepEnergyCost], 
             parent2.Genome.Genes[(int)GeneIndex.StepEnergyCost], 
             sigma, minStepCost, maxStepCost);
-
-        Genes[(int)GeneIndex.MovementEnergyCost] = Recombine(
-            parent1.Genome.Genes[(int)GeneIndex.MovementEnergyCost], 
-            parent2.Genome.Genes[(int)GeneIndex.MovementEnergyCost], 
-            sigma, minMoveCost, maxMoveCost);
     }
+
 
     public static double GaussianRNG(Random rng, double mean, double sigma)
     {
@@ -117,5 +111,39 @@ public class Genome
             GaussianRNG(Grid.Rng, Config.MovementEnergyCost, Config.MutationSigma),
             Config.PredatorMinMovementEnergyCost, Config.PredatorMaxMovementEnergyCost);
         return genome;
+    }
+}
+
+public class AnimalGenome: Genome
+{
+    public double[] Weights {get ;}
+
+    public AnimalGenome(int genomeLength, int weightsLength): base(genomeLength)
+    {
+        Weights = new double[weightsLength];
+    }
+    private void MutateWeights(Animal parent1, Animal parent2, double sigma, double weightBound)
+    {
+        for (int i = 0; i < Weights.Length; i++)
+        {
+            double value = (((AnimalGenome)parent1.Genome).Weights[i] + ((AnimalGenome)parent2.Genome).Weights[i]) / 2;
+            Weights[i] = Math.Clamp(GaussianRNG(Grid.Rng, value, sigma), -weightBound, weightBound);
+        }
+    }
+
+    public void Crossover(
+        Animal parent1, Animal parent2, double sigma, 
+        double minAgeMax, double maxAgeMax,
+        double minEnergyMax, double maxEnergyMax,
+        double minStepCost, double maxStepCost,
+        double minMoveCost, double maxMoveCost,
+        double weightBound)
+    {
+        base.Crossover(parent1, parent2, sigma, minAgeMax, maxAgeMax, minEnergyMax, maxEnergyMax, minStepCost, maxStepCost);
+        Genes[(int)GeneIndex.MovementEnergyCost] = Recombine(
+            parent1.Genome.Genes[(int)GeneIndex.MovementEnergyCost], 
+            parent2.Genome.Genes[(int)GeneIndex.MovementEnergyCost], 
+            sigma, minMoveCost, maxMoveCost);
+        MutateWeights(parent1, parent2, sigma, weightBound);
     }
 }

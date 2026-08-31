@@ -1,3 +1,4 @@
+using System.Linq;
 public abstract class Organism
 {
     // Properties
@@ -66,6 +67,9 @@ public abstract class Animal : Organism
     public abstract Animal? Reproduce(Organism mate);
     protected abstract Organism? FindAdjacentFood(List<ObservedCell> observations);
     protected abstract Organism? FindAdjacentMate(List<ObservedCell> observations);
+    protected abstract Func<ObservedCell, bool> MatchesFood();
+    protected abstract Func<ObservedCell, bool> MatchesThreat();
+    protected abstract Func<ObservedCell, bool> MatchesMate();
 
     // Simulation step
     public Organism? Act(Grid grid, int x, int y)
@@ -99,7 +103,7 @@ public abstract class Animal : Organism
     }
 
     // Searching for mates 
-    public Dictionary<Direction, DirectionStats> FindMates<T>(List<ObservedCell> observations) where T : Animal
+    public Dictionary<Direction, DirectionalInfo> FindMates<T>(List<ObservedCell> observations) where T : Animal
     {
         return ScanByDirection(observations,
             cell => cell.Occupant is T mate 
@@ -179,24 +183,24 @@ public abstract class Animal : Organism
         return observations;
     }
 
-public enum Direction
-    {
-        N, NE, E, SE, S, SW, W, NW
-    }
-public static class DirectionCoords
-    {
-        public static readonly Dictionary<Direction, (int dx, int dy)> Coords = new()
+    public enum Direction
         {
-            { Direction.N, (0, 1) },
-            { Direction.NE, (1, 1) },
-            { Direction.E, (1, 0) },
-            { Direction.SE, (1, -1) },
-            { Direction.S, (0, -1) },
-            { Direction.SW, (-1, -1) },
-            { Direction.W, (-1, 0) },
-            { Direction.NW, (-1, 1) }
-        };
-    }
+            N, NE, E, SE, S, SW, W, NW
+        }
+    public static class DirectionCoords
+        {
+            public static readonly Dictionary<Direction, (int dx, int dy)> Coords = new()
+            {
+                { Direction.N, (0, 1) },
+                { Direction.NE, (1, 1) },
+                { Direction.E, (1, 0) },
+                { Direction.SE, (1, -1) },
+                { Direction.S, (0, -1) },
+                { Direction.SW, (-1, -1) },
+                { Direction.W, (-1, 0) },
+                { Direction.NW, (-1, 1) }
+            };
+        }
 
     public Direction GetDirection(int dx, int dy)
     {
@@ -208,17 +212,17 @@ public static class DirectionCoords
         return directions[index];
     }
 
-    public struct DirectionStats
+    public struct DirectionalInfo
     {
         public double Distance;
         public double Value; // Energy amount in that direction
     }
-    public Dictionary<Direction, DirectionStats> ScanByDirection( // scans the surroundings and returns a dictionary of the nearest food or mates in each direction 
+    public Dictionary<Direction, DirectionalInfo> ScanByDirection( // scans the surroundings and returns a dictionary of the nearest food or mates in each direction 
     List<ObservedCell> observations, 
     Func<ObservedCell, bool> matchesCandidate,   // who am I searching for
     Func<ObservedCell, double> getValue)          // what is the energy amount
     {
-        var result = new Dictionary<Direction, DirectionStats>();
+        var result = new Dictionary<Direction, DirectionalInfo>();
 
         foreach (var cell in observations)
         {
@@ -229,21 +233,21 @@ public static class DirectionCoords
 
             if (!result.ContainsKey(dir) || distance < result[dir].Distance)
             {
-                result[dir] = new DirectionStats { Distance = distance, Value = getValue(cell) };
+                result[dir] = new DirectionalInfo { Distance = distance, Value = getValue(cell) };
             }
         }
 
         return result;
     }
 
-    // Searching for food 
-    public double[] BuildFoodInputs(Dictionary<Direction, DirectionStats> foodByDirection, int maxRadius)
+    // NN Inputs
+    public double[] BuildFoodInputs(Dictionary<Direction, DirectionalInfo> foodByDirection, int maxRadius)
     {
         double[] inputs = new double[16]; // 8 directions * 2 (distance and value)
-        Direction[] allDirections = { Direction.E, Direction.NE, Direction.N, Direction.NW, Direction.W, Direction.SW, Direction.S, Direction.SE };
+        Direction[] allDirections = Enum.GetValues<Direction>();
         for (int i = 0; i < allDirections.Length; i++)
         { 
-            if (foodByDirection.TryGetValue(allDirections[i], out DirectionStats stats)) // looks through the dictionary to find the direction and its stats
+            if (foodByDirection.TryGetValue(allDirections[i], out DirectionalInfo stats)) // looks through the dictionary to find the direction and its stats
             {
                 inputs[i * 2] = 1.0 - (stats.Distance / maxRadius); // Normalize distance
                 inputs[i * 2 + 1] = stats.Value; // Energy value
@@ -251,10 +255,69 @@ public static class DirectionCoords
             else
             {
                 inputs[i * 2] = 0; // No food in this direction
-                inputs[i * 2 + 1] = 0; // No energy value
+                inputs[i * 2 + 1] = 0; // => No energy value
             }
         }
         return inputs;
+    }
+
+    public double[] BuildThreatInputs(Dictionary<Direction, DirectionalInfo> threatByDirection, int maxRadius)
+    {
+        Direction[] allDirections = Enum.GetValues<Direction>();
+        double[] inputs = new double[allDirections.Length]; 
+        for (int i = 0; i < allDirections.Length; i++)
+        {
+            if (threatByDirection.TryGetValue(allDirections[i], out var info))
+            {
+                inputs[i] = 1.0 - (info.Distance / maxRadius);  // normalize - 1=close, 0=far away
+            }
+            else
+            {
+                inputs[i] = 0.0;
+            }
+        }
+
+        return inputs;
+    }
+
+    public double[] BuildMateInputs(Dictionary<Direction, DirectionalInfo> mateByDirection, int maxRadius)
+    {
+        Direction[] allDirections = Enum.GetValues<Direction>();
+        double[] inputs = new double[allDirections.Length];
+        for (int i = 0; i < allDirections.Length; i++)
+        {
+            if (mateByDirection.TryGetValue(allDirections[i], out var info))
+            {
+                inputs[i] = 1.0 - (info.Distance / maxRadius);
+            }
+            else
+            {
+                inputs[i] = 0.0;
+            }
+        }
+        return inputs;
+
+    }
+
+    public double[] BuildNeuralInputs(Grid grid, int x, int y)
+    {
+        var surroundings = ScanSurroundings(grid, x, y, Config.ScanningRadius);
+        
+        var foodByDirection = ScanByDirection(surroundings, MatchesFood(), cell => cell.Occupant.Energy); // Value of the food
+        var threatByDirection = ScanByDirection(surroundings, MatchesThreat(), cell => 1.0); // 
+        var mateByDirection = ScanByDirection(surroundings, MatchesMate(), cell => 1.0);
+        
+        var foodInputs = BuildFoodInputs(foodByDirection, Config.ScanningRadius);
+        var threatInputs = BuildThreatInputs(threatByDirection, Config.ScanningRadius);
+        var mateInputs = BuildMateInputs(mateByDirection, Config.ScanningRadius);
+        
+        double[] finalInput = foodInputs
+            .Concat(threatInputs)
+            .Concat(mateInputs)
+            .Append(Energy/EnergyMax)
+            .ToArray();
+
+        return finalInput;
     }
 
 }
