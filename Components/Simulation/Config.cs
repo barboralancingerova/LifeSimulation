@@ -13,8 +13,8 @@ public static class Config
     public const int SunlightMaxEnergy = 200;
 
     // Energy costs & thresholds
-    public const double StepEnergyCost = 0.01; // Basal energy cost for each step of the simulation
-    public  const double MovementEnergyCost = 0.02; // Energy cost for movement
+    public const double StepEnergyCost = 0.0001; // Basal energy cost for each step of the simulation
+    public  const double MovementEnergyCost = 0.0002; // Energy cost for movement
     public const double ReproductionEnergyCost = 0.3; // Energy cost for reproduction
     public const double ReproductionEnergyThreshold = 0.8; // Minimum energy level required for reproduction
     public const double NewbornEnergyFraction = 0.3; // Fraction of maximum energy that a newborn organism starts with
@@ -44,7 +44,7 @@ public static class Config
         // Biodiversity ratio
             public const double ProducerChance = 0.3;
             public const double HerbivoreChance = 0.03;
-            public const double PredatorChance = 0.003;
+            public const double PredatorChance = 0.01;
 
     // Genetic params
     public const double MutationSigma = 0.05; // 5% standard dev.
@@ -83,6 +83,6 @@ public static class Config
     public const int NNHiddenSize = 16;
     public const int NNOutputSize = 8;
     public const int NNWeightsCount = (NNInputSize * NNHiddenSize) + (NNHiddenSize * NNOutputSize);
-    public const double WeightInicializationSigma = 5;
+    public const double WeightInicializationSigma = 0.5;
 
 }

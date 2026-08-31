@@ -7,6 +7,7 @@ public class Grid
     public Cell[,] Cells { get; private set; }
     public double SunlightIntensity { get; private set; } = 1.0; // Default sunlight intensity
     public static Random Rng = new Random();
+    public Statistics Statistics {get; }= new Statistics(); 
 
     public Grid(int width, int height)
     {
@@ -93,6 +94,7 @@ public class Grid
                 // vyprchavani zivin z prostredi??? doplnit Age u nutrients
             }
         }
+        Statistics.RecordStep(this);
     }
 
 

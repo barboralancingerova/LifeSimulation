@@ -1,2 +1,35 @@
 @page "/simulation"
+@rendermode InteractiveServer
+
 <h3>Simulace</h3>
+
+@if (grid != null && grid.Statistics.ProducerCounts.Count > 0)
+{
+    <p>Step: @stepNumber</p>
+    <p>Producers: @grid.Statistics.ProducerCounts[^1]</p>
+    <p>Herbivores: @grid.Statistics.HerbivoreCounts[^1]</p>
+    <p>Predators: @grid.Statistics.PredatorCounts[^1]</p>
+}
+else
+{
+    <p>Simulace zatím neproběhla ani jeden krok.</p>
+}
+
+<button @onclick="NextStep">Další krok</button>
+
+@code {
+    private Grid? grid;
+    private int stepNumber = 0;
+
+    protected override void OnInitialized()
+    {
+        grid = new Grid(Config.GridWidth, Config.GridHeight);
+        grid.InitializePopulation(Config.ProducerChance, Config.HerbivoreChance, Config.PredatorChance);
+    }
+
+    private void NextStep()
+    {
+        grid?.Step();
+        stepNumber++;
+    }
+}

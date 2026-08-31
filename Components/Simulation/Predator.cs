@@ -12,9 +12,7 @@ class Predator : Animal
     {
         if (prey.IsAlive && prey is Herbivore)
         {
-            Console.WriteLine($"Predator ulovil bylozravce! Energie: {Energy}");
             UpdateEnergy(prey.Energy*Config.PredationEfficiency);
-            Console.WriteLine(Energy);
             prey.Die();
         }
     }
@@ -38,6 +36,7 @@ class Predator : Animal
             Config.WeightBound);
 
         var offspring = new Predator(Config.NewbornEnergyFraction * EnergyMax, offspringGenome);
+        Console.WriteLine($"Predator se rozmnozil!");
         return offspring;
     }
     

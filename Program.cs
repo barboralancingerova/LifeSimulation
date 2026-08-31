@@ -1,5 +1,5 @@
 using GameOfLife.Components;
-
+/*
 #if DEBUG
 var grid = new Grid(Config.GridWidth, Config.GridHeight); 
 grid.InitializePopulation(Config.ProducerChance, Config.HerbivoreChance, Config.PredatorChance);
@@ -16,6 +16,7 @@ while (true)
 }
 return;
 #endif
+*/
 
 var builder = WebApplication.CreateBuilder(args);
 
