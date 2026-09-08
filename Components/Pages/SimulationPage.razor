@@ -1,25 +1,69 @@
-@page "/simulation"
+@page "/"
 @rendermode InteractiveServer
 
 <h3>Simulace</h3>
 
-@if (grid != null && grid.Statistics.ProducerCounts.Count > 0)
+@if (grid != null && grid.Statistics.History.Count > 0)
 {
-    <p>Step: @stepNumber</p>
-    <p>Producers: @grid.Statistics.ProducerCounts[^1]</p>
-    <p>Herbivores: @grid.Statistics.HerbivoreCounts[^1]</p>
-    <p>Predators: @grid.Statistics.PredatorCounts[^1]</p>
+    var last = grid.Statistics.History[^1];
+    <p>Step: @last.StepNumber</p>
+    <p>Producers: @last.ProducerCount | Herbivores: @last.HerbivoreCount | Predators: @last.PredatorCount</p>
 }
 else
 {
-    <p>Simulace zatím neproběhla ani jeden krok.</p>
+    <p>Zatím neproběhl jediný krok simulace.</p>
 }
 
-<button @onclick="NextStep">Další krok</button>
+<button @onclick="Start" disabled="@bezi">Start</button>
+<button @onclick="Stop" disabled="@(!bezi)">Stop</button>
+<button @onclick="NextStep" disabled="@bezi">Další krok</button>
+
+@if (grid != null)
+{
+    <div class="mrizka"
+         style="grid-template-columns: repeat(@grid.Width, 14px);">
+        @for (int y = 0; y < grid.Height; y++)
+        {
+            for (int x = 0; x < grid.Width; x++)
+            {
+                var occupant = grid.Cells[x, y].Occupant;
+                //<div class="cell @CssTranslate(occupant)"></div>
+                <div class="cell @CssTranslate(occupant)" style="width:14px; height:14px;"></div>
+            }
+        }
+    </div>
+}
 
 @code {
+    private PeriodicTimer? timer;
+    private bool bezi = false;
+    private readonly object safetyLock = new();
+
+    private async Task Start()
+    {
+        if (bezi) return;
+        bezi = true;
+        timer = new PeriodicTimer(TimeSpan.FromMilliseconds(200));
+
+        while (await timer.WaitForNextTickAsync())
+        {
+            lock (safetyLock)
+            {
+                grid?.Step();
+            }
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void Stop()
+    {
+        timer?.Dispose();   // shodí i čekající WaitForNextTickAsync → smyčka skončí
+        timer = null;
+        bezi = false;
+    }
+
+    public void Dispose() => Stop();
     private Grid? grid;
-    private int stepNumber = 0;
 
     protected override void OnInitialized()
     {
@@ -29,7 +73,17 @@ else
 
     private void NextStep()
     {
-        grid?.Step();
-        stepNumber++;
+        lock (safetyLock)
+        {
+            grid?.Step();
+        }
     }
+
+    private string CssTranslate(Organism? occupant) => occupant switch
+    {
+        Producer  => "producer",
+        Herbivore => "herbivore",
+        Predator  => "predator",
+        _         => ""
+    };
 }

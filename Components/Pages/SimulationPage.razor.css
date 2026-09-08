@@ -1,0 +1,16 @@
+.mrizka {
+    display: grid;      /* sloupce dodá inline style z Razoru */
+    gap: 1px;
+    width: fit-content;
+    background-color: #333;
+}
+
+.cell {
+    width: 14px;
+    height: 14px;
+    background-color: #111;   /* prázdná buňka */
+}
+
+.cell.producer  { background-color: green; }
+.cell.herbivore { background-color: gold; }
+.cell.predator  { background-color: red; }

@@ -1,10 +1,9 @@
 public class Statistics
 {
-    public List<int> ProducerCounts { get; } = new();
-    public List<int> HerbivoreCounts { get; } = new();
-    public List<int> PredatorCounts { get; } = new();
 
-    public void RecordStep(Grid grid)
+    public record Snapshot(int StepNumber, double SolarIntensity, int ProducerCount, int HerbivoreCount, int PredatorCount);
+    public List<Snapshot> History { get; } = new List<Snapshot>();
+    public void RecordStep(Grid grid, Sunlight sunlight, int stepNumber)
     {
         int producers = 0, herbivores = 0, predators = 0;
         for (int x = 0; x < grid.Width; x++)
@@ -17,8 +16,7 @@ public class Statistics
                 else if (occupant is Predator) predators++;
             }
         }
-        ProducerCounts.Add(producers);
-        HerbivoreCounts.Add(herbivores);
-        PredatorCounts.Add(predators);
+        var snapshot = new Snapshot(stepNumber, (double)sunlight.EnergyAmount / Config.SunlightMaxEnergy, producers, herbivores, predators);
+        History.Add(snapshot);
     }
 }

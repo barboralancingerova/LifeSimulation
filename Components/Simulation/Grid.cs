@@ -2,6 +2,7 @@ using System.Data;
 
 public class Grid 
 {
+    public int StepNumber { get; private set; } = 0;
     public int Width { get; private set; }
     public int Height { get; private set; }
     public Cell[,] Cells { get; private set; }
@@ -94,7 +95,8 @@ public class Grid
                 // vyprchavani zivin z prostredi??? doplnit Age u nutrients
             }
         }
-        Statistics.RecordStep(this);
+        StepNumber++;
+        Statistics.RecordStep(this, new Sunlight(SunlightIntensity * Config.SunlightMaxEnergy), StepNumber);
     }
 
 

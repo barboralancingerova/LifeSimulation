@@ -1,0 +1,29 @@
+@using System.Text;
+<svg viewBox="0 0 @Config.GraphWidth @Config.GraphHeight" class="graf"></svg>
+<polyline points="@ProducerPoints()" fill="none" stroke="lime" stroke-width="2" />
+
+@code {
+     [Parameter]
+    public List<Statistics.Snapshot> history { get; set; } = new();
+    private string ProducerPoints()
+    {
+        var stringBuilder = new StringBuilder();
+        if (history.Count == 0)
+        {
+            return string.Empty;
+        }
+        int maxCount = history.Max(s => s.ProducerCount);
+        if (maxCount == 0)
+        {
+            return string.Empty;
+        }
+        int lastStep = Math.Max(1, history[^1].StepNumber); // division by 0
+        foreach (var snapshot in history)
+        {
+            double x = (snapshot.StepNumber / (double)lastStep) * Config.GraphWidth;
+            double y = Config.GraphHeight - (snapshot.ProducerCount / (double)maxCount) * Config.GraphHeight;
+            stringBuilder.Append($"{x},{y} ");
+        }
+        return stringBuilder.ToString();
+    }
+}

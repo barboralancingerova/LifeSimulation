@@ -85,4 +85,7 @@ public static class Config
     public const int NNWeightsCount = (NNInputSize * NNHiddenSize) + (NNHiddenSize * NNOutputSize);
     public const double WeightInicializationSigma = 0.5;
 
+    // Graphics
+    public const int GraphWidth = 500;
+    public const int GraphHeight = 300;
 }
