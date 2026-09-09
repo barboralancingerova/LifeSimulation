@@ -26,9 +26,17 @@
 }
 
 .cell            { background-color: #111; }
-.cell.producer   { background-color: green; }
-.cell.herbivore  { background-color: gold; }
-.cell.predator   { background-color: red; }
+.cell.producer   { background-color: #83D894; }   
+.cell.herbivore  { background-color: #F5D20A; }   
+.cell.predator   { background-color: #FAA98E; }   
+.cell.nutrients  { background-color: #B35A4D; }   
+.cell img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;      
+    image-rendering: pixelated;
+    display: block;           
+}
 
 .prava {
     display: grid;

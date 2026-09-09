@@ -3,9 +3,62 @@
     <input type="range" min="0" max="@Config.SunlightMaxEnergy" step="0.1"
            value="@EnergyAmount"
            @onchange="e => SunlightChanged.InvokeAsync(double.Parse(e.Value!.ToString()!))" />
+           
+    Rychlost: @StepsPerSec steps/s
+    <input type="range" min="1" max="15" step="1"
+           value="@StepsPerSec"
+           @onchange="e => StepsPerSecChanged.InvokeAsync(int.Parse(e.Value!.ToString()!))" />
+</label>
+<label>
+    Producenti:
+    <input 
+    type="number" 
+        min="0"
+        max="1" 
+        step="0.01" 
+        @value="producerChance" 
+        @onchange="e=> ProducerChanceChanged.InvokeAsync(double.Parse(e.Value!.ToString()!, System.Globalization.CultureInfo.InvariantCulture))" />
+</label>
+<label>
+    Býložravci:
+    <input 
+        type="number" 
+        min="0" 
+        max="1" 
+        step="0.01" 
+        @value="herbivoreChance" 
+        @onchange="e=> HerbivoreChanceChanged.InvokeAsync(double.Parse(e.Value!.ToString()!, System.Globalization.CultureInfo.InvariantCulture))" />
+</label>
+<label>
+    Predátoři:
+    <input 
+        type="number" 
+        min="0" 
+        max="1" 
+        step="0.001" 
+        @value="predatorChance" 
+        @onchange="e=> PredatorChanceChanged.InvokeAsync(double.Parse(e.Value!.ToString()!, System.Globalization.CultureInfo.InvariantCulture))" />
 </label>
 
+@if (ProducerChance + HerbivoreChance + PredatorChance > 1)
+    {
+        <p class="varovani">⚠ Součet pravděpodobností přesahuje 100 %!</p>
+    }
+
 @code {
+    //slunecni jas
     [Parameter] public double EnergyAmount { get; set; }
     [Parameter] public EventCallback<double> SunlightChanged { get; set; }
+    
+    //rychlost
+    [Parameter] public int StepsPerSec { get; set; }
+    [Parameter] public EventCallback<int> StepsPerSecChanged { get; set; }
+
+    //initialization chances
+    [Parameter] public double ProducerChance { get; set; }
+    [Parameter] public EventCallback<double> ProducerChanceChanged { get; set; }
+    [Parameter] public double HerbivoreChance { get; set; }
+    [Parameter] public EventCallback<double> HerbivoreChanceChanged { get; set; }
+    [Parameter] public double PredatorChance { get; set; }
+    [Parameter] public EventCallback<double> PredatorChanceChanged { get; set; }
 }

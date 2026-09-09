@@ -25,7 +25,12 @@
                     for (int x = 0; x < grid.Width; x++)
                     {
                         var occupant = grid.Cells[x, y].Occupant;
-                        <div class="cell @CssTranslate(occupant)"></div>
+                        <div class="cell @CellBackground(grid.Cells[x, y])">
+                            @if (AnimalIconPath(occupant) is string path && path != "")
+                            {
+                                <img src="@path" alt="" />
+                            }
+                        </div>
                     }
                 }
             </div>
@@ -37,8 +42,25 @@
             <button @onclick="Start" disabled="@bezi">Start</button>
             <button @onclick="Stop" disabled="@(!bezi)">Stop</button>
             <button @onclick="NextStep" disabled="@bezi">Další krok</button>
+            <button @onclick="Reset">Reset</button>
             <button @onclick="() => logScale = !logScale">Scale: @(logScale ? "logarithmic" : "linear")</button>
-            <ControlPanel EnergyAmount="grid?.Sunlight.EnergyAmount ?? 0" SunlightChanged="EditSunlight" />
+            <ControlPanel 
+                EnergyAmount="grid?.Sunlight.EnergyAmount ?? 0" 
+                SunlightChanged="EditSunlight" 
+                StepsPerSec="stepsPerSec" 
+                StepsPerSecChanged="ChangeSpeed" 
+                ProducerChance="producerChance"
+                ProducerChanceChanged="ChangeProducerChance"
+                HerbivoreChance="herbivoreChance"
+                HerbivoreChanceChanged="ChangeHerbivoreChance"
+                PredatorChance="predatorChance"
+                PredatorChanceChanged="ChangePredatorChance"
+            />
+
+            <button @onclick="PresetDefault">Rovnovážný poměr</button>
+            <button @onclick="PresetRandom">Náhodný poměr</button>
+            <button @onclick="PresetOverpredation">Přemnožení predátorů</button>
+        </div>
 
             @if (grid != null && grid.Statistics.History.Count > 0)
             {
@@ -57,7 +79,6 @@
             }
         </div>
     </div>
-</div>
 
 @code {
     // --- Stav komponenty ---
@@ -66,12 +87,17 @@
     private bool bezi = false;
     private readonly object safetyLock = new();
     private bool logScale = true;
+    private int stepsPerSec = 5;
+    private int intervalMs = 200;
+    private double producerChance = Config.ProducerChance;
+    private double herbivoreChance = Config.HerbivoreChance;
+    private double predatorChance = Config.PredatorChance;
 
     // --- Životní cyklus ---
     protected override void OnInitialized()
     {
         grid = new Grid(Config.GridWidth, Config.GridHeight);
-        grid.InitializePopulation(Config.ProducerChance, Config.HerbivoreChance, Config.PredatorChance);
+        grid.InitializePopulation(producerChance, herbivoreChance, predatorChance);
     }
 
     public void Dispose() => Stop();
@@ -81,7 +107,7 @@
     {
         if (bezi) return;
         bezi = true;
-        timer = new PeriodicTimer(TimeSpan.FromMilliseconds(200));
+        timer = new PeriodicTimer(TimeSpan.FromMilliseconds(intervalMs));
 
         while (await timer.WaitForNextTickAsync())
         {
@@ -108,7 +134,27 @@
         }
     }
 
-    // Controls
+    private void Reset()
+    {
+        lock (safetyLock)
+        {
+            Stop();
+            OnInitialized(); 
+        }
+    }
+
+    private void ChangeSpeed(int value)
+    {
+        stepsPerSec = value;
+        intervalMs = 1000 / stepsPerSec;
+        if (bezi) 
+        { 
+            Stop();
+            _ = Start(); // restart timeru
+        }    
+    }
+
+    // Control Panel
     private void EditSunlight(double value)
     {
         lock (safetyLock)
@@ -117,12 +163,60 @@
         }
     }
 
-    // --- Pomocné ---
-    private string CssTranslate(Organism? occupant) => occupant switch
+    //chances
+    private void SetChances(double producerChance, double herbivoreChance, double predatorChance)
     {
-        Producer  => "producer",
-        Herbivore => "herbivore",
-        Predator  => "predator",
-        _         => ""
-    };
+        this.producerChance = producerChance;
+        this.herbivoreChance = herbivoreChance;
+        this.predatorChance = predatorChance;
+        Reset();
+    }
+
+    private void PresetDefault()
+    {
+        SetChances(Config.ProducerChance, Config.HerbivoreChance, Config.PredatorChance);
+    }
+
+    private void PresetRandom()
+    {
+        var random = new Random();
+        double p = random.NextDouble(), h = random.NextDouble(), pr = random.NextDouble();
+        double sum = p + h + pr;
+        double scale = random.NextDouble() * 0.6 / sum;   // hustota 0-60%
+        SetChances(p * scale, h * scale, pr * scale);
+    }
+    private void PresetOverpredation()
+    {
+        SetChances(0.2, 0.05, 0.02);
+    }
+
+    private void ChangeProducerChance(double value) => producerChance = value;
+    private void ChangeHerbivoreChance(double value) => herbivoreChance = value;
+    private void ChangePredatorChance(double value) => predatorChance = value;
+   
+
+    // other
+    private string CellBackground(Cell cell) 
+    {
+        if (cell.Nutrients != null) return "nutrients";
+
+        return cell.Occupant switch
+        {
+            Producer  => "producer",
+            Herbivore => "herbivore",
+            Predator  => "predator",
+            _         => cell.Nutrients != null ? "nutrient" : ""
+        };
+    }
+
+    private string AnimalIconPath(Organism? occupant) 
+    {
+        return occupant switch
+        {
+            Producer  => "/img/producer.png",
+            Herbivore => "/img/herbivore.png",
+            Predator  => "/img/predator.png",
+            _         => ""
+        };
+    }
 }
