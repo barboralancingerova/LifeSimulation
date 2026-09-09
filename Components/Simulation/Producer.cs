@@ -35,8 +35,7 @@ public class Producer: Organism
     {
         if (cell.Nutrients != null)
         {
-            double maxAbsorb = EnergyMax * Config.NutrientAbsorbtionRate;
-            double absorbed = Math.Min(cell.Nutrients.EnergyAmount, maxAbsorb);
+            double absorbed = cell.Nutrients.Drain(EnergyMax * Config.NutrientAbsorbtionRate);
             UpdateEnergy(absorbed);
 
             if (cell.Nutrients.EnergyAmount <= 0)

@@ -9,10 +9,25 @@ public abstract class Energy
     }
 
 public class Nutrients : Energy
-    {
-        public Nutrients(double energyAmount) : base(energyAmount)
-        { }
+{
+    public int Age { get; private set; } = 0;
+
+    public Nutrients(double energyAmount) : base(energyAmount) { }
+
+    public double Drain(double requested) {
+        double drained = Math.Min(requested, EnergyAmount);
+        EnergyAmount -= drained;
+        return drained;
     }
+
+    public void Decay()
+    {
+        Age++;
+        EnergyAmount *= Config.NutrientDecayFactor;   //exponential decay
+    }
+
+    public bool IsDepleted => EnergyAmount < Config.NutrientMinEnergy;
+}
 public  class Sunlight : Energy
     {
         public Sunlight(double energyAmount) : base(energyAmount)

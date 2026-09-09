@@ -12,6 +12,12 @@ public static class Config
     public const int DaysToFullEnergy = 14; // Number of days it takes for a producer to reach full energy through photosynthesis
     public const int SunlightMaxEnergy = 200;
 
+    // Nutricion parameters
+    public static double NutrientDecayFactor = 0.95;  // 5 % ztráta za krok
+    public static double NutrientMinEnergy = 1.0;     // pod tímhle → pryč
+    public static double NutrientHighTreshold = 20.0; // nad tímhle → high
+    public static double NutrientMediumTreshold = 5.0; // nad tímhle → medium, pod tímhle → low
+
     // Energy costs & thresholds
     public const double StepEnergyCost = 0.0001; // Basal energy cost for each step of the simulation
     public  const double MovementEnergyCost = 0.0002; // Energy cost for movement

@@ -43,41 +43,67 @@
             <button @onclick="Stop" disabled="@(!bezi)">Stop</button>
             <button @onclick="NextStep" disabled="@bezi">Další krok</button>
             <button @onclick="Reset">Reset</button>
-            <button @onclick="() => logScale = !logScale">Scale: @(logScale ? "logarithmic" : "linear")</button>
-            <ControlPanel 
-                EnergyAmount="grid?.Sunlight.EnergyAmount ?? 0" 
-                SunlightChanged="EditSunlight" 
-                StepsPerSec="stepsPerSec" 
-                StepsPerSecChanged="ChangeSpeed" 
-                ProducerChance="producerChance"
-                ProducerChanceChanged="ChangeProducerChance"
-                HerbivoreChance="herbivoreChance"
-                HerbivoreChanceChanged="ChangeHerbivoreChance"
-                PredatorChance="predatorChance"
-                PredatorChanceChanged="ChangePredatorChance"
-            />
+            </div>
 
-            <button @onclick="PresetDefault">Rovnovážný poměr</button>
-            <button @onclick="PresetRandom">Náhodný poměr</button>
-            <button @onclick="PresetOverpredation">Přemnožení predátorů</button>
+        <div class="tweaky">
+            <div class="inicializacni">
+                <h4>Inicializace</h4>
+                <button @onclick="PresetDefault">Rovnovážný poměr</button>
+                <button @onclick="PresetRandom">Náhodný poměr</button>
+                <button @onclick="PresetOverpredation">Přemnožení predátorů</button>
+                <label>Producenti: <input type="number" min="0" max="1" step="0.01" @bind="producerChance" /></label>
+                <label>Býložravci: <input type="number" min="0" max="1" step="0.01" @bind="herbivoreChance" /></label>
+                <label>Predátoři: <input type="number" min="0" max="1" step="0.001" @bind="predatorChance" /></label>
+                <label>Seed: <input type="number" @bind="seed" /></label>
+                </div>
+            <div class="prubezne">
+                <h4>Průběžné zásahy</h4>
+                <label>Sluneční jas: @(grid?.Sunlight.EnergyAmount ?? 0)
+                    <input type="range" min="0" max="@Config.SunlightMaxEnergy" step="0.1"
+                        value="@(grid?.Sunlight.EnergyAmount ?? 0)"
+                        @onchange="e => EditSunlight(double.Parse(e.Value!.ToString()!, System.Globalization.CultureInfo.InvariantCulture))" />
+                </label>
+                <label>Rychlost: @stepsPerSec steps/s
+                    <input type="range" min="1" max="15" value="@stepsPerSec"
+                        @onchange="e => ChangeSpeed(int.Parse(e.Value!.ToString()!))" />
+                </label>
+                </div>
+
+                @if (grid != null && grid.Statistics.History.Count > 0)
+                {
+                    var last = grid.Statistics.History[^1];
+                    <p>Producers: @last.ProducerCount | Herbivores: @last.HerbivoreCount | Predators: @last.PredatorCount</p>
+                }
+                else
+                {
+                    <p>Zatím neproběhl jediný krok simulace.</p>
+                }
+                
+            </div>
+
+        <div class="grafika">
+            <button @onclick="() => logScale = !logScale">Scale: @(logScale ? "log" : "lin")</button>
+
+            <button class="legenda @(showProducers ? "" : "vypnuta")" @onclick="() => showProducers = !showProducers"> <span style="color:lime">●</span> Producenti </button>
+            <button class="legenda @(showHerbivores ? "" : "vypnuta")" @onclick="() => showHerbivores = !showHerbivores"> <span style="color:gold">●</span> Býložravci </button>
+            <button class="legenda @(showPredators ? "" : "vypnuta")" @onclick="() => showPredators = !showPredators"> <span style="color:red">●</span> Predátoři </button>
+            <button class="legenda @(showEnergy ? "" : "vypnuta")" @onclick="() => showEnergy = !showEnergy"> <span style="color:cyan">●</span> Energie </button>
+            <button class="legenda @(showSunlight ? "" : "vypnuta")" @onclick="() => showSunlight = !showSunlight"> <span style="color:white">●</span> Sluneční jas </button>
         </div>
 
-            @if (grid != null && grid.Statistics.History.Count > 0)
-            {
-                var last = grid.Statistics.History[^1];
-                <p>Producers: @last.ProducerCount | Herbivores: @last.HerbivoreCount | Predators: @last.PredatorCount</p>
-            }
-            else
-            {
-                <p>Zatím neproběhl jediný krok simulace.</p>
-            }
-        </div>
         <div class="statistiky">
-            @if (grid != null)
-            {
-                <Chart History="grid.Statistics.History" logScale="logScale" />
-            }
+            @if (grid != null) { <Chart 
+            History="grid.Statistics.History" 
+            logScale="logScale" 
+            ShowProducers="showProducers" 
+            ShowHerbivores="showHerbivores" 
+            ShowPredators="showPredators" 
+            ShowEnergy="showEnergy" 
+            ShowSunlight="showSunlight"
+            /> }
         </div>
+    </div>
+
     </div>
 
 @code {
@@ -92,6 +118,12 @@
     private double producerChance = Config.ProducerChance;
     private double herbivoreChance = Config.HerbivoreChance;
     private double predatorChance = Config.PredatorChance;
+    private bool showProducers = true;
+    private bool showHerbivores = true;
+    private bool showPredators = true;
+    private bool showEnergy = true;
+    private bool showSunlight = true;
+    private int seed = 29;
 
     // --- Životní cyklus ---
     protected override void OnInitialized()
@@ -139,6 +171,7 @@
         lock (safetyLock)
         {
             Stop();
+            Grid.Rng = new Random(seed);
             OnInitialized(); 
         }
     }
@@ -198,14 +231,20 @@
     // other
     private string CellBackground(Cell cell) 
     {
-        if (cell.Nutrients != null) return "nutrients";
+        if (cell.Nutrients != null) 
+        {
+            double e = cell.Nutrients.EnergyAmount;
+            return e > Config.NutrientHighTreshold ? "nutrient-high" 
+            : e > Config.NutrientMediumTreshold ? "nutrient-medium" 
+            : "nutrient-low";
+        }
 
         return cell.Occupant switch
         {
             Producer  => "producer",
             Herbivore => "herbivore",
             Predator  => "predator",
-            _         => cell.Nutrients != null ? "nutrient" : ""
+            _         => ""
         };
     }
 

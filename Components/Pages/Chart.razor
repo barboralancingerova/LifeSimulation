@@ -1,16 +1,33 @@
 @using System.Text;
 <svg viewBox="0 0 @Config.GraphWidth @Config.GraphHeight" class="graf">
-    <polyline points="@Points(s => s.ProducerCount, SharedMax, logScale)" fill="none" stroke="lime" stroke-width="2" />
-    <polyline points="@Points(s => s.HerbivoreCount, SharedMax, logScale)" fill="none" stroke="gold" stroke-width="2" />
-    <polyline points="@Points(s => s.PredatorCount, SharedMax, logScale)" fill="none" stroke="red" stroke-width="2" />
-    <polyline points="@Points(s => s.SolarIntensity, 1.0, false)" fill="none" stroke="white" stroke-width="2" />
+
+    @*osy*@
+    <line x1="0" y1="@Config.GraphHeight" x2="@Config.GraphWidth" y2="@Config.GraphHeight" stroke="gray" />
+    <line x1="0" y1="0" x2="0" y2="@Config.GraphHeight" stroke="gray" />
+    <text x="4" y="12" fill="gray" font-size="11">@SharedMax</text>
+    <text x="4" y="@(Config.GraphHeight - 4)" fill="gray" font-size="11">0</text>
+    <text x="@(Config.GraphWidth - 40)" y="@(Config.GraphHeight - 4)" fill="gray" font-size="11"> krok @(History.Count > 0 ? History[^1].StepNumber : 0) </text>
+
+    @*krivky*@
+    @if (ShowProducers) { <polyline points="@Points(s => s.ProducerCount, SharedMax, logScale)" fill="none" stroke="lime" stroke-width="2" /> }
+    @if (ShowHerbivores) { <polyline points="@Points(s => s.HerbivoreCount, SharedMax, logScale)" fill="none" stroke="gold" stroke-width="2" /> }
+    @if (ShowPredators) { <polyline points="@Points(s => s.PredatorCount, SharedMax, logScale)" fill="none" stroke="red" stroke-width="2" /> }
+    @if (ShowEnergy) { <polyline points="@Points(s => s.TotalEnergy, SharedEnergyMax, logScale)" fill="none" stroke="cyan" stroke-width="2" /> }
+    @if (ShowSunlight) { <polyline points="@Points(s => s.SolarIntensity, 1.0, false)" fill="none" stroke="white" stroke-width="2" /> }
+
 </svg>
 
 
 @code {
      [Parameter] public List<Statistics.Snapshot> History { get; set; } = new();
     [Parameter] public bool logScale { get; set; }
+    [Parameter] public bool ShowProducers { get; set; } = true;
+    [Parameter] public bool ShowHerbivores { get; set; } = true;
+    [Parameter] public bool ShowPredators { get; set; } = true;
+    [Parameter] public bool ShowSunlight { get; set; } = true;
+    [Parameter] public bool ShowEnergy { get; set; } = true;
     private int SharedMax => Math.Max(1, History.Count == 0 ? 1 : History.Max(s => Math.Max(s.ProducerCount, Math.Max(s.HerbivoreCount, s.PredatorCount))));
+    private double SharedEnergyMax => History.Count == 0 ? 1: Math.Max(1, History.Max(s => s.TotalEnergy));
     private string Points(Func<Statistics.Snapshot, double> count, double maxCount, bool log)
     {
         if (History.Count == 0) return string.Empty;

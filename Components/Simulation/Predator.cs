@@ -36,7 +36,6 @@ class Predator : Animal
             Config.WeightBound);
 
         var offspring = new Predator(Config.NewbornEnergyFraction * EnergyMax, offspringGenome);
-        Console.WriteLine($"Predator se rozmnozil!");
         return offspring;
     }
     

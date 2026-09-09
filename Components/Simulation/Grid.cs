@@ -96,7 +96,15 @@ public class Grid
                     }
                 }
 
-                // vyprchavani zivin z prostredi??? doplnit Age u nutrients
+                var nutrients = Cells[x, y].Nutrients;
+                if (nutrients != null)
+                {
+                    nutrients.Decay();
+                    if (nutrients.IsDepleted)
+                    {
+                        Cells[x, y].Nutrients = null;
+                    }
+                }
             }
         }
         StepNumber++;
