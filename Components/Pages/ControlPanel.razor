@@ -1,0 +1,11 @@
+<label>
+    Sluneční jas: @EnergyAmount
+    <input type="range" min="0" max="@Config.SunlightMaxEnergy" step="0.1"
+           value="@EnergyAmount"
+           @onchange="e => SunlightChanged.InvokeAsync(double.Parse(e.Value!.ToString()!))" />
+</label>
+
+@code {
+    [Parameter] public double EnergyAmount { get; set; }
+    [Parameter] public EventCallback<double> SunlightChanged { get; set; }
+}

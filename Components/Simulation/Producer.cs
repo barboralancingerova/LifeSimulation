@@ -53,7 +53,7 @@ public class Producer: Organism
         Metabolize();
 
         // Photosynthesize
-        Photosynthesize(grid.SunlightIntensity*Config.SunlightMaxEnergy);
+        Photosynthesize(grid.Sunlight.EnergyAmount);
 
         // Absorb Nutrients
         AbsorbNutrients(grid.Cells[x, y]);

@@ -1,29 +1,38 @@
 @using System.Text;
-<svg viewBox="0 0 @Config.GraphWidth @Config.GraphHeight" class="graf"></svg>
-<polyline points="@ProducerPoints()" fill="none" stroke="lime" stroke-width="2" />
+<svg viewBox="0 0 @Config.GraphWidth @Config.GraphHeight" class="graf">
+    <polyline points="@Points(s => s.ProducerCount, SharedMax, logScale)" fill="none" stroke="lime" stroke-width="2" />
+    <polyline points="@Points(s => s.HerbivoreCount, SharedMax, logScale)" fill="none" stroke="gold" stroke-width="2" />
+    <polyline points="@Points(s => s.PredatorCount, SharedMax, logScale)" fill="none" stroke="red" stroke-width="2" />
+    <polyline points="@Points(s => s.SolarIntensity, 1.0, false)" fill="none" stroke="white" stroke-width="2" />
+</svg>
+
 
 @code {
-     [Parameter]
-    public List<Statistics.Snapshot> history { get; set; } = new();
-    private string ProducerPoints()
+     [Parameter] public List<Statistics.Snapshot> History { get; set; } = new();
+    [Parameter] public bool logScale { get; set; }
+    private int SharedMax => Math.Max(1, History.Count == 0 ? 1 : History.Max(s => Math.Max(s.ProducerCount, Math.Max(s.HerbivoreCount, s.PredatorCount))));
+    private string Points(Func<Statistics.Snapshot, double> count, double maxCount, bool log)
     {
+        if (History.Count == 0) return string.Empty;
+
         var stringBuilder = new StringBuilder();
-        if (history.Count == 0)
-        {
-            return string.Empty;
-        }
-        int maxCount = history.Max(s => s.ProducerCount);
-        if (maxCount == 0)
-        {
-            return string.Empty;
-        }
-        int lastStep = Math.Max(1, history[^1].StepNumber); // division by 0
-        foreach (var snapshot in history)
+        int lastStep = Math.Max(1, History[^1].StepNumber);
+
+        foreach (var snapshot in History)
         {
             double x = (snapshot.StepNumber / (double)lastStep) * Config.GraphWidth;
-            double y = Config.GraphHeight - (snapshot.ProducerCount / (double)maxCount) * Config.GraphHeight;
-            stringBuilder.Append($"{x},{y} ");
+            if (!log)
+            {
+                double y = Config.GraphHeight - (count(snapshot) / (double)maxCount) * Config.GraphHeight; //linearni skala
+                stringBuilder.Append($"{x},{y} ");
+            }
+            else
+            {
+                double y = Config.GraphHeight - (Math.Log10(count(snapshot) + 1) / Math.Log10(maxCount + 1)) * Config.GraphHeight; //logaritmicka skala
+                stringBuilder.Append($"{x},{y} ");
+            }
         }
         return stringBuilder.ToString();
     }
 }
+

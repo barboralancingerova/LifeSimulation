@@ -37,6 +37,8 @@
             <button @onclick="Start" disabled="@bezi">Start</button>
             <button @onclick="Stop" disabled="@(!bezi)">Stop</button>
             <button @onclick="NextStep" disabled="@bezi">Další krok</button>
+            <button @onclick="() => logScale = !logScale">Scale: @(logScale ? "logarithmic" : "linear")</button>
+            <ControlPanel EnergyAmount="grid?.Sunlight.EnergyAmount ?? 0" SunlightChanged="EditSunlight" />
 
             @if (grid != null && grid.Statistics.History.Count > 0)
             {
@@ -49,7 +51,10 @@
             }
         </div>
         <div class="statistiky">
-            @*sem přijde graf*@
+            @if (grid != null)
+            {
+                <Chart History="grid.Statistics.History" logScale="logScale" />
+            }
         </div>
     </div>
 </div>
@@ -60,6 +65,7 @@
     private PeriodicTimer? timer;
     private bool bezi = false;
     private readonly object safetyLock = new();
+    private bool logScale = true;
 
     // --- Životní cyklus ---
     protected override void OnInitialized()
@@ -99,6 +105,15 @@
         lock (safetyLock)
         {
             grid?.Step();
+        }
+    }
+
+    // Controls
+    private void EditSunlight(double value)
+    {
+        lock (safetyLock)
+        {
+            grid?.Sunlight.UpdateEnergy(value);
         }
     }
 

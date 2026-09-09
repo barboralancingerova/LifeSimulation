@@ -6,7 +6,7 @@ public class Grid
     public int Width { get; private set; }
     public int Height { get; private set; }
     public Cell[,] Cells { get; private set; }
-    public double SunlightIntensity { get; private set; } = 1.0; // Default sunlight intensity
+    public Sunlight Sunlight { get; private set; } = new Sunlight(Config.SunlightMaxEnergy); 
     public static Random Rng = new Random();
     public Statistics Statistics {get; }= new Statistics(); 
 
@@ -25,6 +25,10 @@ public class Grid
         }
     }
 
+    public void UpdateSunlight(double amount)
+    {
+        Sunlight.UpdateEnergy(amount);
+    }
     public Cell GetCell(int x, int y)
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height)
@@ -96,7 +100,7 @@ public class Grid
             }
         }
         StepNumber++;
-        Statistics.RecordStep(this, new Sunlight(SunlightIntensity * Config.SunlightMaxEnergy), StepNumber);
+        Statistics.RecordStep(this, Sunlight, StepNumber);
     }
 
 
