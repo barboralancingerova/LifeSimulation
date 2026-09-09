@@ -1,16 +1,39 @@
+.stranka {
+    display: grid;
+    grid-template-columns: auto 1fr;   /* levá: podle obsahu; pravá: zbytek */
+    height: 100vh;
+    overflow: hidden;
+    background-color: black;
+    color: white;
+}
+
+.leva {
+    display: grid;
+    grid-template-rows: 3rem 1fr;      /* hlavička pevně, mřížka zbytek */
+}
+
+.hlavicka {
+    padding: 0 10px;
+    display: flex;
+    align-items: center;               /* svisle vycentrovat nadpis */
+}
+
 .mrizka {
-    display: grid;      /* sloupce dodá inline style z Razoru */
+    display: grid;                     /* sloupce/řádky/poměr dodá inline style */
+    height: calc(100vh - 3rem);        /* výška obrazovky minus hlavička */
     gap: 1px;
-    width: fit-content;
     background-color: #333;
 }
 
-.cell {
-    width: 14px;
-    height: 14px;
-    background-color: #111;   /* prázdná buňka */
+.cell            { background-color: #111; }
+.cell.producer   { background-color: green; }
+.cell.herbivore  { background-color: gold; }
+.cell.predator   { background-color: red; }
+
+.prava {
+    display: grid;
+    grid-template-rows: 1fr 1fr;       /* ovládání : statistiky = 1:1 */
 }
 
-.cell.producer  { background-color: green; }
-.cell.herbivore { background-color: gold; }
-.cell.predator  { background-color: red; }
+.ovladani   { padding: 10px; }
+.statistiky { padding: 10px; }

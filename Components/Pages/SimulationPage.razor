@@ -1,44 +1,76 @@
 @page "/"
 @rendermode InteractiveServer
+@implements IDisposable
 
-<h3>Simulace</h3>
+<div class="stranka">
+    <div class="leva">
+        <div class="hlavicka">
+            <h3>
+                Simulace
+                @if (grid != null && grid.Statistics.History.Count > 0)
+                {
+                    <text>– Step #@grid.Statistics.History[^1].StepNumber</text>
+                }
+            </h3>
+        </div>
 
-@if (grid != null && grid.Statistics.History.Count > 0)
-{
-    var last = grid.Statistics.History[^1];
-    <p>Step: @last.StepNumber</p>
-    <p>Producers: @last.ProducerCount | Herbivores: @last.HerbivoreCount | Predators: @last.PredatorCount</p>
-}
-else
-{
-    <p>Zatím neproběhl jediný krok simulace.</p>
-}
-
-<button @onclick="Start" disabled="@bezi">Start</button>
-<button @onclick="Stop" disabled="@(!bezi)">Stop</button>
-<button @onclick="NextStep" disabled="@bezi">Další krok</button>
-
-@if (grid != null)
-{
-    <div class="mrizka"
-         style="grid-template-columns: repeat(@grid.Width, 14px);">
-        @for (int y = 0; y < grid.Height; y++)
+        @if (grid != null)
         {
-            for (int x = 0; x < grid.Width; x++)
-            {
-                var occupant = grid.Cells[x, y].Occupant;
-                //<div class="cell @CssTranslate(occupant)"></div>
-                <div class="cell @CssTranslate(occupant)" style="width:14px; height:14px;"></div>
-            }
+            <div class="mrizka"
+                 style="grid-template-columns: repeat(@grid.Width, 1fr);
+                        grid-template-rows: repeat(@grid.Height, 1fr);
+                        aspect-ratio: @grid.Width / @grid.Height;">
+                @for (int y = 0; y < grid.Height; y++)
+                {
+                    for (int x = 0; x < grid.Width; x++)
+                    {
+                        var occupant = grid.Cells[x, y].Occupant;
+                        <div class="cell @CssTranslate(occupant)"></div>
+                    }
+                }
+            </div>
         }
     </div>
-}
+
+    <div class="prava">
+        <div class="ovladani">
+            <button @onclick="Start" disabled="@bezi">Start</button>
+            <button @onclick="Stop" disabled="@(!bezi)">Stop</button>
+            <button @onclick="NextStep" disabled="@bezi">Další krok</button>
+
+            @if (grid != null && grid.Statistics.History.Count > 0)
+            {
+                var last = grid.Statistics.History[^1];
+                <p>Producers: @last.ProducerCount | Herbivores: @last.HerbivoreCount | Predators: @last.PredatorCount</p>
+            }
+            else
+            {
+                <p>Zatím neproběhl jediný krok simulace.</p>
+            }
+        </div>
+        <div class="statistiky">
+            @*sem přijde graf*@
+        </div>
+    </div>
+</div>
 
 @code {
+    // --- Stav komponenty ---
+    private Grid? grid;
     private PeriodicTimer? timer;
     private bool bezi = false;
     private readonly object safetyLock = new();
 
+    // --- Životní cyklus ---
+    protected override void OnInitialized()
+    {
+        grid = new Grid(Config.GridWidth, Config.GridHeight);
+        grid.InitializePopulation(Config.ProducerChance, Config.HerbivoreChance, Config.PredatorChance);
+    }
+
+    public void Dispose() => Stop();
+
+    // --- Ovládání běhu ---
     private async Task Start()
     {
         if (bezi) return;
@@ -62,15 +94,6 @@ else
         bezi = false;
     }
 
-    public void Dispose() => Stop();
-    private Grid? grid;
-
-    protected override void OnInitialized()
-    {
-        grid = new Grid(Config.GridWidth, Config.GridHeight);
-        grid.InitializePopulation(Config.ProducerChance, Config.HerbivoreChance, Config.PredatorChance);
-    }
-
     private void NextStep()
     {
         lock (safetyLock)
@@ -79,6 +102,7 @@ else
         }
     }
 
+    // --- Pomocné ---
     private string CssTranslate(Organism? occupant) => occupant switch
     {
         Producer  => "producer",
