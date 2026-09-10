@@ -8,7 +8,8 @@
     <input type="range" min="1" max="15" step="1"
            value="@StepsPerSec"
            @onchange="e => StepsPerSecChanged.InvokeAsync(int.Parse(e.Value!.ToString()!))" />
-</label>
+    </label>
+
 
 @code{
     [Parameter] public double EnergyAmount { get; set; }
@@ -17,4 +18,4 @@
     //rychlost
     [Parameter] public int StepsPerSec { get; set; }
     [Parameter] public EventCallback<int> StepsPerSecChanged { get; set; }
-}
+    }

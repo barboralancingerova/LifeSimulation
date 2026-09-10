@@ -72,7 +72,7 @@ public class Genome
             GaussianRNG(Grid.Rng, Config.ProducerEnergyMax, Config.MutationSigma),
             Config.ProducerMinEnergyMax, Config.ProducerMaxEnergyMax);
         genome.Genes[(int)GeneIndex.StepEnergyCost] = Math.Clamp(
-            GaussianRNG(Grid.Rng, Config.StepEnergyCost, Config.MutationSigma),
+            GaussianRNG(Grid.Rng, RuntimeSettings.StepEnergyCost, Config.MutationSigma),
             Config.ProducerMinStepEnergyCost, Config.ProducerMaxStepEnergyCost);
         return genome;
     }
@@ -87,10 +87,10 @@ public class Genome
             GaussianRNG(Grid.Rng, Config.HerbivoreEnergyMax, Config.MutationSigma),
             Config.HerbivoreMinEnergyMax, Config.HerbivoreMaxEnergyMax);
         genome.Genes[(int)GeneIndex.StepEnergyCost] = Math.Clamp(
-            GaussianRNG(Grid.Rng, Config.StepEnergyCost, Config.MutationSigma),
+            GaussianRNG(Grid.Rng, RuntimeSettings.StepEnergyCost, Config.MutationSigma),
             Config.HerbivoreMinStepEnergyCost, Config.HerbivoreMaxStepEnergyCost);
         genome.Genes[(int)GeneIndex.MovementEnergyCost] = Math.Clamp(
-            GaussianRNG(Grid.Rng, Config.MovementEnergyCost, Config.MutationSigma),
+            GaussianRNG(Grid.Rng, RuntimeSettings.MovementEnergyCost, Config.MutationSigma),
             Config.HerbivoreMinMovementEnergyCost, Config.HerbivoreMaxMovementEnergyCost);
 
         for (int weight = 0; weight < Config.NNWeightsCount; weight++)
@@ -110,10 +110,10 @@ public class Genome
             GaussianRNG(Grid.Rng, Config.PredatorEnergyMax, Config.MutationSigma),
             Config.PredatorMinEnergyMax, Config.PredatorMaxEnergyMax);
         genome.Genes[(int)GeneIndex.StepEnergyCost] = Math.Clamp(
-            GaussianRNG(Grid.Rng, Config.StepEnergyCost, Config.MutationSigma),
+            GaussianRNG(Grid.Rng, RuntimeSettings.StepEnergyCost, Config.MutationSigma),
             Config.PredatorMinStepEnergyCost, Config.PredatorMaxStepEnergyCost);
         genome.Genes[(int)GeneIndex.MovementEnergyCost] = Math.Clamp(
-            GaussianRNG(Grid.Rng, Config.MovementEnergyCost, Config.MutationSigma),
+            GaussianRNG(Grid.Rng, RuntimeSettings.MovementEnergyCost, Config.MutationSigma),
             Config.PredatorMinMovementEnergyCost, Config.PredatorMaxMovementEnergyCost);
         for (int weight = 0; weight < Config.NNWeightsCount; weight++)
         {

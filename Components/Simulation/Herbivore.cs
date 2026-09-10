@@ -12,7 +12,7 @@ public class Herbivore : Animal
     {
         if (prey.IsAlive && prey is Producer)
         {
-            this.UpdateEnergy(prey.Energy * Config.PredationEfficiency);
+            this.UpdateEnergy(prey.Energy * RuntimeSettings.PredationEfficiency);
             prey.Die();
         }
     }
@@ -24,8 +24,8 @@ public class Herbivore : Animal
         {
             return null; // Not enough energy to reproduce
         }
-        this.UpdateEnergy(-EnergyMax * Config.ReproductionEnergyCost);
-        mate.UpdateEnergy(-mate.EnergyMax * Config.ReproductionEnergyCost);
+        this.UpdateEnergy(-EnergyMax * RuntimeSettings.ReproductionEnergyCost);
+        mate.UpdateEnergy(-mate.EnergyMax * RuntimeSettings.ReproductionEnergyCost);
 
         var offspringGenome = new AnimalGenome(4, Config.NNWeightsCount);
         offspringGenome.Crossover(this, (Animal)mate, Config.MutationSigma, 

@@ -12,7 +12,7 @@ class Predator : Animal
     {
         if (prey.IsAlive && prey is Herbivore)
         {
-            UpdateEnergy(prey.Energy*Config.PredationEfficiency);
+            UpdateEnergy(prey.Energy*RuntimeSettings.PredationEfficiency);
             prey.Die();
         }
     }
@@ -24,8 +24,8 @@ class Predator : Animal
         {
             return null; 
         }
-        this.UpdateEnergy(-EnergyMax * Config.ReproductionEnergyCost);
-        mate.UpdateEnergy(-mate.EnergyMax * Config.ReproductionEnergyCost);
+        this.UpdateEnergy(-EnergyMax * RuntimeSettings.ReproductionEnergyCost);
+        mate.UpdateEnergy(-mate.EnergyMax * RuntimeSettings.ReproductionEnergyCost);
 
         var offspringGenome = new AnimalGenome(4, Config.NNWeightsCount);
         offspringGenome.Crossover(this, (Animal)mate, Config.MutationSigma, 

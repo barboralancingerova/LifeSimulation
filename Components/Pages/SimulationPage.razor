@@ -1,6 +1,7 @@
 @page "/"
 @rendermode InteractiveServer
 @implements IDisposable
+@inject IJSRuntime JS // fullscreen
 
 <div class="stranka">
     <div class="leva">
@@ -39,10 +40,21 @@
 
     <div class="prava">
         <div class="ovladani">
-            <button @onclick="Start" disabled="@bezi">Start</button>
-            <button @onclick="Stop" disabled="@(!bezi)">Stop</button>
-            <button @onclick="NextStep" disabled="@bezi">Další krok</button>
-            <button @onclick="Reset">Reset</button>
+            <button class="ikona" @onclick="Start" disabled="@bezi"title="Start"> 
+                <img src="/img/start.png" alt="Start" />
+            </button>
+            <button class="ikona" @onclick="Stop" disabled="@(!bezi)" title="Stop">
+                <img src="/img/stop.png" alt="Stop" />
+            </button>
+            <button class="ikona" @onclick="NextStep" disabled="@bezi" title="Další krok">
+                <img src="/img/next.png" alt="Další krok" />
+            </button>
+            <button class="ikona" @onclick="Reset" title="Reset">
+                <img src="/img/restart.png" alt="Reset" />
+            </button>
+            <button class="ikona" @onclick="Fullscreen" title="⛶ Fullscreen">
+                <img src="/img/fullscreen.png" alt="⛶ Fullscreen" />
+            </button>
             </div>
 
         <div class="tweaky">
@@ -62,11 +74,18 @@
                     <input type="range" min="0" max="@Config.SunlightMaxEnergy" step="0.1"
                         value="@(grid?.Sunlight.EnergyAmount ?? 0)"
                         @onchange="e => EditSunlight(double.Parse(e.Value!.ToString()!, System.Globalization.CultureInfo.InvariantCulture))" />
-                </label>
+                    </label>
                 <label>Rychlost: @stepsPerSec steps/s
                     <input type="range" min="1" max="15" value="@stepsPerSec"
                         @onchange="e => ChangeSpeed(int.Parse(e.Value!.ToString()!))" />
-                </label>
+                    </label>
+                <label>Efektivita predace: <input type="number" min="0" max="1" step="0.001" @bind="predationEfficiency" /></label>
+                <label>Náklady na reprodukci: <input type="number" min="0" max="1" step="0.001" @bind="reproductionEnergyCost" /></label>
+                <label>Náklady na pohyb: <input type="number" min="0" max="1" step="0.001" @bind="movementEnergyCost" /></label>
+                <label>Bazální metabolismus: <input type="number" min="0" max="1" step="0.001" @bind="stepEnergyCost" /></label>
+                <button @onclick="DefaultLifeParameters">Výchozí životní parametry</button>
+                <button @onclick="RandomLifeParameters">Náhodné životní parametry</button>
+
                 </div>
 
                 @if (grid != null && grid.Statistics.History.Count > 0)
@@ -89,6 +108,9 @@
             <button class="legenda @(showPredators ? "" : "vypnuta")" @onclick="() => showPredators = !showPredators"> <span style="color:red">●</span> Predátoři </button>
             <button class="legenda @(showEnergy ? "" : "vypnuta")" @onclick="() => showEnergy = !showEnergy"> <span style="color:cyan">●</span> Energie </button>
             <button class="legenda @(showSunlight ? "" : "vypnuta")" @onclick="() => showSunlight = !showSunlight"> <span style="color:white">●</span> Sluneční jas </button>
+            <button class="legenda @(showAverageProducerEnergy ? "" : "vypnuta")" @onclick="() => showAverageProducerEnergy = !showAverageProducerEnergy"> <span style="color:green">●</span> Průměrná energie producentů </button>
+            <button class="legenda @(showAverageHerbivoreEnergy ? "" : "vypnuta")" @onclick="() => showAverageHerbivoreEnergy = !showAverageHerbivoreEnergy"> <span style="color:orange">●</span> Průměrná energie býložravců </button>
+            <button class="legenda @(showAveragePredatorEnergy ? "" : "vypnuta")" @onclick="() => showAveragePredatorEnergy = !showAveragePredatorEnergy"> <span style="color:darkred">●</span> Průměrná energie predátorů </button>
         </div>
 
         <div class="statistiky">
@@ -100,6 +122,9 @@
             ShowPredators="showPredators" 
             ShowEnergy="showEnergy" 
             ShowSunlight="showSunlight"
+            ShowAverageProducerEnergy="showAverageProducerEnergy"
+            ShowAverageHerbivoreEnergy="showAverageHerbivoreEnergy"
+            ShowAveragePredatorEnergy="showAveragePredatorEnergy"
             /> }
         </div>
     </div>
@@ -121,10 +146,34 @@
     private bool showProducers = true;
     private bool showHerbivores = true;
     private bool showPredators = true;
+    private bool showAverageProducerEnergy = true;
+    private bool showAverageHerbivoreEnergy = true;
+    private bool showAveragePredatorEnergy = true;
     private bool showEnergy = true;
     private bool showSunlight = true;
     private int seed = 29;
-
+    private async Task Fullscreen() => await JS.InvokeVoidAsync("toggleFullscreen");
+    private double predationEfficiency
+    {
+        get => RuntimeSettings.PredationEfficiency;
+        set { lock (safetyLock) { RuntimeSettings.PredationEfficiency = value; } }
+    }
+    private double reproductionEnergyCost
+    {
+        get => RuntimeSettings.ReproductionEnergyCost;
+        set { lock (safetyLock) { RuntimeSettings.ReproductionEnergyCost = value; } }
+    }
+    private double movementEnergyCost
+    {
+        get => RuntimeSettings.MovementEnergyCost;
+        set { lock (safetyLock) { RuntimeSettings.MovementEnergyCost = value; } }
+    }
+    private double stepEnergyCost
+    {
+        get => RuntimeSettings.StepEnergyCost;
+        set { lock (safetyLock) { RuntimeSettings.StepEnergyCost = value; } }
+    }
+    
     // --- Životní cyklus ---
     protected override void OnInitialized()
     {
@@ -227,6 +276,29 @@
     private void ChangeHerbivoreChance(double value) => herbivoreChance = value;
     private void ChangePredatorChance(double value) => predatorChance = value;
    
+    // life parameters
+    private void DefaultLifeParameters()
+    {
+        lock (safetyLock)
+        {
+            predationEfficiency = Config.PredationEfficiency;
+            reproductionEnergyCost = Config.ReproductionEnergyCost;
+            movementEnergyCost = Config.MovementEnergyCost;
+            stepEnergyCost = Config.StepEnergyCost;
+        }
+    }
+
+    private void RandomLifeParameters()
+    {
+        var random = new Random();
+        lock (safetyLock)
+        {
+            predationEfficiency = Config.PredationEfficiency * (0.5 + random.NextDouble() * 1.5);  // pul az dvojansobek defaultu
+            reproductionEnergyCost = Config.ReproductionEnergyCost * (0.5 + random.NextDouble() * 1.5);
+            movementEnergyCost = Config.MovementEnergyCost * (0.5 + random.NextDouble() * 1.5);
+            stepEnergyCost = Config.StepEnergyCost * (0.5 + random.NextDouble() * 1.5); 
+        }
+    }
 
     // other
     private string CellBackground(Cell cell) 

@@ -19,6 +19,7 @@ public static class Config
     public static double NutrientMediumTreshold = 5.0; // nad tímhle → medium, pod tímhle → low
 
     // Energy costs & thresholds
+
     public const double StepEnergyCost = 0.0001; // Basal energy cost for each step of the simulation
     public  const double MovementEnergyCost = 0.0002; // Energy cost for movement
     public const double ReproductionEnergyCost = 0.3; // Energy cost for reproduction

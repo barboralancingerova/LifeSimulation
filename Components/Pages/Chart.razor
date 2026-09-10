@@ -4,8 +4,8 @@
     @*osy*@
     <line x1="0" y1="@Config.GraphHeight" x2="@Config.GraphWidth" y2="@Config.GraphHeight" stroke="gray" />
     <line x1="0" y1="0" x2="0" y2="@Config.GraphHeight" stroke="gray" />
-    <text x="4" y="12" fill="gray" font-size="11">@SharedMax</text>
-    <text x="4" y="@(Config.GraphHeight - 4)" fill="gray" font-size="11">0</text>
+    @* <text x="4" y="12" fill="gray" font-size="11">@SharedMax</text> *@
+    @* <text x="4" y="@(Config.GraphHeight - 4)" fill="gray" font-size="11">0</text> *@
     <text x="@(Config.GraphWidth - 40)" y="@(Config.GraphHeight - 4)" fill="gray" font-size="11"> krok @(History.Count > 0 ? History[^1].StepNumber : 0) </text>
 
     @*krivky*@
@@ -14,6 +14,9 @@
     @if (ShowPredators) { <polyline points="@Points(s => s.PredatorCount, SharedMax, logScale)" fill="none" stroke="red" stroke-width="2" /> }
     @if (ShowEnergy) { <polyline points="@Points(s => s.TotalEnergy, SharedEnergyMax, logScale)" fill="none" stroke="cyan" stroke-width="2" /> }
     @if (ShowSunlight) { <polyline points="@Points(s => s.SolarIntensity, 1.0, false)" fill="none" stroke="white" stroke-width="2" /> }
+    @if (ShowAverageProducerEnergy) { <polyline points="@Points(s => s.ProducerCount > 0 ? s.ProducerEnergy / s.ProducerCount : 0, SharedEnergyMax, logScale)" fill="none" stroke="green" stroke-width="2" /> }
+    @if (ShowAverageHerbivoreEnergy) { <polyline points="@Points(s => s.HerbivoreCount > 0 ? s.HerbivoreEnergy / s.HerbivoreCount : 0, SharedEnergyMax, logScale)" fill="none" stroke="orange" stroke-width="2" /> }
+    @if (ShowAveragePredatorEnergy) { <polyline points="@Points(s => s.PredatorCount > 0 ? s.PredatorEnergy / s.PredatorCount : 0, SharedEnergyMax, logScale)" fill="none" stroke="darkred" stroke-width="2" /> }
 
 </svg>
 
@@ -26,6 +29,9 @@
     [Parameter] public bool ShowPredators { get; set; } = true;
     [Parameter] public bool ShowSunlight { get; set; } = true;
     [Parameter] public bool ShowEnergy { get; set; } = true;
+    [Parameter] public bool ShowAverageProducerEnergy { get; set; } = true;
+    [Parameter] public bool ShowAverageHerbivoreEnergy { get; set; } = true;
+    [Parameter] public bool ShowAveragePredatorEnergy { get; set; } = true;
     private int SharedMax => Math.Max(1, History.Count == 0 ? 1 : History.Max(s => Math.Max(s.ProducerCount, Math.Max(s.HerbivoreCount, s.PredatorCount))));
     private double SharedEnergyMax => History.Count == 0 ? 1: Math.Max(1, History.Max(s => s.TotalEnergy));
     private string Points(Func<Statistics.Snapshot, double> count, double maxCount, bool log)

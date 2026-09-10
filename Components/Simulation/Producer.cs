@@ -19,7 +19,7 @@ public class Producer: Organism
         Producer? offspring = null;
         if (Energy >= EnergyMax * Config.ReproductionEnergyThreshold)
         {
-            UpdateEnergy(-Config.ReproductionEnergyCost*EnergyMax);
+            UpdateEnergy(-RuntimeSettings.ReproductionEnergyCost*EnergyMax);
 
             var offspringGenome = new Genome(3);
             offspringGenome.Mutate(this, Config.MutationSigma,
