@@ -1,17 +1,13 @@
 # GameOfLife — programátorská dokumentace
 
-Pro čtenáře, který umí C#, ale o úloze nic neví. Struktura podle R. Kryla
-(*Jak psát dokumentaci zápočtového programu*). Popisuje **skutečný stav kódu**,
-včetně nedodělků a odchylek od původního záměru.
-
 ## 1. Přesné zadání (pravidla simulace)
 
 ### 1.1 Prostředí
-- Mřížka `Config.GridWidth × Config.GridHeight` = **50 × 50** buněk, **pevné okraje** (pohyb i umístění potomka mimo mřížku se zahodí).
-- Buňka (`Cell`) nese: souřadnice, nejvýše jednoho `Occupant` (organismus) a volitelně `Nutrients` (živiny s energií).
+- Mřížka `Config.GridWidth × Config.GridHeight` = **50 × 50** buněk, **pevné okraje**.
+- Buňka (`Cell`) nese: souřadnice, nejvýše jednoho `Occupant` (organismus) a libovolně mnoho `Nutrients` (živiny s energií).
 - Globální **slunce** (`Sunlight`): jedna hodnota pro celou mřížku v rozsahu 0–`SunlightMaxEnergy` (200), nastavitelná za běhu.
 - Čas je diskrétní. Jeden krok = jeden průchod `Grid.Step()`.
-- Souřadnice: `Cells[x, y]`; směr `N` je `(0, +1)`. Vykreslení iteruje `y` od 0 shora, takže **sever v modelu je na obrazovce dole** — nemá to vliv na simulaci, jen na interpretaci směrů.
+- Souřadnice: `Cells[x, y]`; směr `N` je `(0, +1)` atd.
 
 ### 1.2 Organismy
 
@@ -46,44 +42,42 @@ Konstanty v `Config`; čtyři z nich (`StepEnergyCost`, `MovementEnergyCost`, `R
 
 **Důsledky výchozích hodnot** (užitečné pro experimenty):
 - Producent se ze startu (500) naplní za ~6 kroků a rozmnožuje se prakticky každý druhý krok, dokud má kam. Metabolismus 0,1/krok je zanedbatelný; producenty limituje pouze místo a věk.
-- Bazální a pohybové náklady zvířat (0,2 + 0,4 za krok z 2000) jsou také velmi nízké; zvířata umírají hlavně **stářím** nebo tím, že se nikdy nedostanou k jídlu.
+- Bazální a pohybové náklady zvířat (0,2 + 0,4 za krok z 2000) jsou také velmi nízké; zvířata umírají hlavně stářím nebo tím, že se nikdy nedostanou k jídlu.
 - **Energie se nezachovává**: slunce je každý krok externí vstup, predace a rozklad mají účinnost 0,3 a živiny se ztrácejí 5 % za krok. `Statistics.TotalEnergy` (organismy + živiny) je tedy ukazatel stavu, ne invariant.
-- Konstanta `Config.DaysToFullEnergy` se v kódu **nepoužívá**.
 
 ### 1.4 Nutrient cyklus
-1. `Grid.Step()` narazí na buňku, jejíž `Occupant.IsAlive == false` → do buňky uloží `new Nutrients(Energy × 0,3)` a organismus odstraní. Případné dřívější živiny v buňce jsou **přepsány**, ne sečteny.
+1. `Grid.Step()` narazí na buňku, jejíž `Occupant.IsAlive == false` → do buňky uloží jako nový objekt `new Nutrients(Energy × 0,3)` a tlející organismus odstraní. 
 2. Každý krok `Nutrients.Decay()`: `EnergyAmount *= 0,95`; pod 1,0 se objekt zahodí.
-3. Producent stojící v buňce s živinami je vstřebává (`Drain`, max. 20 % svého `EnergyMax` za krok). Živiny se **nešíří** do sousedních buněk; využije je jen producent, který v buňce vyroste (potomek umístěný do ní).
+3. Producent stojící v buňce s živinami je vstřebává (`Drain`, max. 20 % svého `EnergyMax` za krok). Živiny se nešíří do sousedních buněk; využije je jen producent, který v buňce vyroste (potomek umístěný do ní).
 4. Poznámka: sežraná kořist má v okamžiku smrti plnou energii → vydatné živiny. Organismus zemřelý hladem má `Energy ≤ 0` → živiny ≤ 0 → okamžitě zmizí.
 
 ### 1.5 Vnímání, neuronová síť a genom
 
-**Vnímání** (`Animal.ScanSurroundings`): Čebyševův poloměr `ScanningRadius` = 4, tj. okno 9×9 bez středu, oříznuté okrajem mřížky. Pro každou z 8 směrů (`N, NE, …, NW`, směr určen `atan2` a zaokrouhlením na 45°) se zaznamená **nejbližší** objekt daného typu (`ScanByDirection`).
+**Vnímání** (`Animal.ScanSurroundings`): "Poloměr" `ScanningRadius` = 4, tj. okno 9×9 bez středu, oříznuté okrajem mřížky. Celé okno se rozdělí do osmi sektorů (cca po 45 stupních) a funkce `ScanByDirection` hledá v každém směru nejbližší relevantní objekt.
 
 **Vstupy NN** (33 hodnot, `BuildNeuralInputs`):
 
 | Index | Význam | Hodnoty |
 |---|---|---|
-| 0–15 | potrava: pro každý směr `(1 − d/4, energie kořisti)` | blízkost 0–1; energie **nenormalizovaná** (stovky až tisíce) |
-| 16–23 | hrozba: blízkost nejbližšího predátora v každém směru | 0–1; u predátorů vždy 0 (`MatchesThreat => false`) |
-| 24–31 | partner: blízkost nejbližšího dospělého partnera s energií ≥ 80 % | 0–1 |
+| 0–15 | potrava: pro každý směr `(1 − vzdálenost/4, energie kořisti)` | blízkost 0–1; energie potravy |
+| 16–23 | hrozba: vzdálenost nejbližšího predátora v každém směru | 0–1; u predátorů vždy 0 (`MatchesThreat => false`) |
+| 24–31 | partner: vzdálenost nejbližšího dospělého partnera s energií ≥ 80 % | 0–1 |
 | 32 | vlastní `Energy / EnergyMax` | 0–1 |
 
-**Síť** (`NeuralNetwork.Forward`): plně propojená 33 → 16 → 8, aktivace `tanh` v obou vrstvách, **bez biasů**. Váhy jsou jedno pole `double[656]` (`33·16 + 16·8`), uložené řádkově: `weights[j·33 + i]` pro skrytou vrstvu, za nimi `weights[528 + k·16 + l]` pro výstupní. Výstup = 8 hodnot; `argmax` určí směr pohybu. Síť je čistě statická funkce; instanční část třídy (`Weights`, konstruktor) se nepoužívá.
+**Síť** (`NeuralNetwork.Forward`): složena ze dvou vrstev (33 → 16 → 8), aktivace v obou vrstvách probíhá pomocí funkce `tanh` bez biasů. Váhy jsou jedno pole `double[656]` (`33·16 + 16·8`), uložené v jednom poli za sebou: `weights[j·33 + i]` pro skrytou vrstvu, za nimi `weights[528 + k·16 + l]` pro výstupní. Výstup = 8 hodnot; `argmax` určí směr pohybu. Síť je čistě statická funkce.
 
 **Genom** (`Genome`, `AnimalGenome : Genome`):
-- `Genes[]` indexované `GeneIndex`: `AgeMax`, `EnergyMax`, `StepEnergyCost`, (zvířata navíc) `MovementEnergyCost`. Producent má 3 geny, zvíře 4 + `Weights[656]`.
-- **Skutečně používané geny**: pouze `AgeMax` a `EnergyMax` (čtou se v konstruktoru organismu). `StepEnergyCost` a `MovementEnergyCost` se dědí a mutují, ale `Metabolize()` a `Move()` používají globální `RuntimeSettings`, takže **tyto dva geny nemají na chování vliv** (viz kap. 8).
-- Počáteční genom: gauss kolem výchozí hodnoty se σ = `MutationSigma` = 0,05, oříznutý do mezí `<Druh>Min/Max<Gen>`; váhy NN ~ N(0, 0,5).
-- **Rozmnožení producenta** (`Genome.Mutate`): každý gen = gauss(gen rodiče, σ), ořez do mezí.
-- **Rozmnožení zvířat** (`AnimalGenome.Crossover`): každý gen i každá váha = **průměr rodičů + gauss(0, σ)**, geny oříznuty do mezí, váhy do `±WeightBound` (2).
-- Gaussovský generátor: Box–Muller nad `Grid.Rng`.
-- Poznámka k σ: mutace je **absolutní** (σ = 0,05 v jednotkách genu). Pro `AgeMax` (desítky) a `EnergyMax` (tisíce) je to prakticky nulová variabilita; reálná evoluce probíhá jen ve vahách NN (rozsah ±2).
+- `Genes[]` indexované `GeneIndex`: `AgeMax`, `EnergyMax`, `StepEnergyCost`, (zvířata pak mají navíc:) `MovementEnergyCost`. Producent má 3 geny, zvíře 4 + `Weights[656]`, které se také dědí a mutují.
+- Počáteční genom: gauss kolem výchozí hodnoty se σ = `MutationSigma` = 0,05, oříznutý do mezí `<Druh>Min/Max<Gen>`; váhy NN nabývají hodnot ~ N(0, 0,5).
+- **Rozmnožení producenta** (`Genome.Mutate`): nepohlavní rozmnožování - potomek vzniká dělením z jednoho rodiče; každý gen se vypočítá z hodnoty rodičovského genu mutací kolem středové hodnoty s normálním rozdělením a směrodatnou odchylkou, následně je ořezán pomocí `Math.Clamp` do rozumných mezí.
+- **Rozmnožení zvířat** (`AnimalGenome.Crossover`): každý gen i každá váha = průměr rodičů + gauss(0, σ), geny oříznuty do mezí, váhy do `±WeightBound` (= 2).
+- Gaussovský generátor vytvořen pomocí Box–Mullerovy transformace (rovnoměrné --> normální rozdělení) nad `Grid.Rng`.
+- Poznámka k σ: mutace je absolutní (σ = 0,05 v jednotkách genu). Pro `AgeMax` (desítky) a `EnergyMax` (tisíce) je to prakticky nulová variabilita; reálná evoluce probíhá jen ve vahách NN (rozsah ±2); v budoucnu by se dal přidat widget na měnění této hodnoty za běhu a mít různé hodnoty pro různé veličiny.
 
 ### 1.6 Determinismus a náhoda
-- Jediný zdroj náhody v jádře je statický `Grid.Rng`. Při načtení stránky je vytvořen **bez seedu**; `Reset` v GUI ho nahradí `new Random(seed)`. Reprodukovatelný běh tedy vznikne až po stisku *Reset* (nebo presetu, který Reset volá).
-- Presety *Náhodný poměr* a *Náhodné životní parametry* používají vlastní neseedovaný `Random` — jejich výsledek se do seedu nepromítá; pro protokol experimentu je nutné zapsat vzniklé hodnoty.
-- `Grid.Rng` a `RuntimeSettings` jsou `static` → na Blazor Serveru jsou **sdílené mezi všemi připojenými prohlížeči**. Pro jednoho uživatele to nevadí, pro více současných relací se ovlivňují.
+- Jediný zdroj náhody v jádře je statický `Grid.Rng`. Uživatel si může nastavit vlastní seed za účelem reprodukovatelnosti experimentů.
+- Presety *Náhodný poměr* a *Náhodné životní parametry* používají vlastní neseedovaný `Random` — jejich výsledek se do seedu nepromítá(!); pro protokol experimentu je nutné zapsat vzniklé hodnoty.
+- `Grid.Rng` a `RuntimeSettings` jsou `static` → na Blazor Serveru jsou sdílené mezi všemi připojenými prohlížeči. Pro jednoho uživatele to nevadí, pro více současných relací by se mohly ovlivňovat.
 
 ## 2. Zvolený algoritmus — krok simulace
 
@@ -91,11 +85,12 @@ Konstanty v `Config`; čtyři z nich (`StepEnergyCost`, `MovementEnergyCost`, `R
 
 ```
 pro x = 0..W-1, pro y = 0..H-1:                   (x vnější, y vnitřní)
-    o = Cells[x,y].Occupant
-    pokud o ≠ null a o není naživu:
+    occ = Cells[x,y].Occupant
+    pokud occ ≠ null a occ není naživu:
         Cells[x,y].Nutrients = Nutrients(o.Energy × 0,3); Occupant = null; pokračuj
-    pokud o je Animal:      potomek = o.Act(grid, x, y)
-    pokud o je Producer:    potomek = o.Act(grid, x, y)
+    pokud occ je Animal:      potomek = occ.Act(grid, x, y)
+        // Act vrací potomka nebo null, nedojde-li k reprodukci
+    pokud occ je Producer:    potomek = occ.Act(grid, x, y)
     pokud potomek ≠ null:   umísti do první volné buňky v okolí 5×5 rodiče
                             (prohledává se dx = −2..2, dy = −2..2; když není místo, potomek zaniká)
     pokud v buňce jsou živiny: Decay(); pod 1,0 odstraň
