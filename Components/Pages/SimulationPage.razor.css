@@ -63,6 +63,8 @@
     align-items: flex-start;
 }
 
+.varovani { color: orange; }
+
 .legenda { margin-right: 10px; font-size: 0.85em; }
 button.legenda { background: none; border: none; color: white; cursor: pointer; }
 button.legenda.vypnuta { opacity: 0.35; }

@@ -129,28 +129,32 @@ public class Grid
     }
 
     public void InitializePopulation(double producerChance, double herbivoreChance, double predatorChance)
-{
-    for (int x = 0; x < Width; x++)
     {
-        for (int y = 0; y < Height; y++)
+        if (producerChance + herbivoreChance + predatorChance > 1)
         {
-            double roll = Rng.NextDouble(); // 0.0 - 1.0
+            throw new ArgumentException("Součet pravděpodobností přesahuje 1.");
+        }
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                double roll = Rng.NextDouble(); // 0.0 - 1.0
 
-            if (roll < producerChance)
-            {
-                Cells[x, y].Occupant = new Producer(Config.ProducerEnergyMax * 0.5, Genome.CreateRandomGenome_Producer());
+                if (roll < producerChance)
+                {
+                    Cells[x, y].Occupant = new Producer(Config.ProducerEnergyMax * 0.5, Genome.CreateRandomGenome_Producer());
+                }
+                else if (roll < producerChance + herbivoreChance)
+                {
+                    Cells[x, y].Occupant = new Herbivore(Config.HerbivoreEnergyMax * 0.5, Genome.CreateRandomGenome_Herbivore());
+                }
+                else if (roll < producerChance + herbivoreChance + predatorChance)
+                {
+                    Cells[x, y].Occupant = new Predator(Config.PredatorEnergyMax * 0.5, Genome.CreateRandomGenome_Predator());
+                }
+                // else: stays empty
             }
-            else if (roll < producerChance + herbivoreChance)
-            {
-                Cells[x, y].Occupant = new Herbivore(Config.HerbivoreEnergyMax * 0.5, Genome.CreateRandomGenome_Herbivore());
-            }
-            else if (roll < producerChance + herbivoreChance + predatorChance)
-            {
-                Cells[x, y].Occupant = new Predator(Config.PredatorEnergyMax * 0.5, Genome.CreateRandomGenome_Predator());
-            }
-            // else: stays empty
         }
     }
-}
 
 }

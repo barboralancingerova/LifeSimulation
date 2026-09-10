@@ -49,7 +49,7 @@
             <button class="ikona" @onclick="NextStep" disabled="@bezi" title="Další krok">
                 <img src="/img/next.png" alt="Další krok" />
             </button>
-            <button class="ikona" @onclick="Reset" title="Reset">
+            <button class="ikona" @onclick="Reset" disabled="@ChancesInvalid"title="Reset">
                 <img src="/img/restart.png" alt="Reset" />
             </button>
             <button class="ikona" @onclick="Fullscreen" title="⛶ Fullscreen">
@@ -63,9 +63,13 @@
                 <button @onclick="PresetDefault">Rovnovážný poměr</button>
                 <button @onclick="PresetRandom">Náhodný poměr</button>
                 <button @onclick="PresetOverpredation">Přemnožení predátorů</button>
-                <label>Producenti: <input type="number" min="0" max="1" step="0.01" @bind="producerChance" /></label>
-                <label>Býložravci: <input type="number" min="0" max="1" step="0.01" @bind="herbivoreChance" /></label>
+                <label>Producenti: <input type="number" min="0" max="1" step="0.001" @bind="producerChance" /></label>
+                <label>Býložravci: <input type="number" min="0" max="1" step="0.001" @bind="herbivoreChance" /></label>
                 <label>Predátoři: <input type="number" min="0" max="1" step="0.001" @bind="predatorChance" /></label>
+                @if (ChancesInvalid)
+                {
+                    <p class="varovani">⚠ Součet pravděpodobností (@ChancesSum.ToString("0.###")) přesahuje 1!</p>
+                }
                 <label>Seed: <input type="number" @bind="seed" /></label>
                 </div>
             <div class="prubezne">
@@ -143,6 +147,8 @@
     private double producerChance = Config.ProducerChance;
     private double herbivoreChance = Config.HerbivoreChance;
     private double predatorChance = Config.PredatorChance;
+    private double ChancesSum => producerChance + herbivoreChance + predatorChance;
+    private bool ChancesInvalid => ChancesSum > 1;
     private bool showProducers = true;
     private bool showHerbivores = true;
     private bool showPredators = true;
@@ -177,6 +183,7 @@
     // --- Životní cyklus ---
     protected override void OnInitialized()
     {
+        Grid.Rng = new Random(seed);
         grid = new Grid(Config.GridWidth, Config.GridHeight);
         grid.InitializePopulation(producerChance, herbivoreChance, predatorChance);
     }
@@ -221,6 +228,7 @@
         {
             Stop();
             Grid.Rng = new Random(seed);
+
             OnInitialized(); 
         }
     }
