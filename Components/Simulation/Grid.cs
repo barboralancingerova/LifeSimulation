@@ -39,6 +39,8 @@ public class Grid
 
     public bool PlaceOffspring(Organism offspring, int x, int y)
     {
+        // sbiram vhodna policka
+        var kandidati = new List<(int nx, int ny)>();
         for (int dx = -Config.OffspringDistance; dx <= Config.OffspringDistance; dx++)
         {
             for (int dy = -Config.OffspringDistance; dy <= Config.OffspringDistance; dy++)
@@ -47,14 +49,33 @@ public class Grid
                 int nx = x + dx;
                 int ny = y + dy;
                 if (nx < 0 || nx >= Width || ny < 0 || ny >= Height) continue;
-                if (Cells[nx, ny].Occupant ==null)
+
+                bool vyhovuje = offspring is Predator //if - predatorovi vyhovuje then
+                    ? Cells[nx, ny].Occupant == null || Cells[nx, ny].Occupant is Producer // then
+                    : Cells[nx, ny].Occupant == null; //else - ostatnim vyhovuje jen prazdne pole
+
+                if (vyhovuje)
                 {
-                    Cells[nx, ny].Occupant = offspring;
-                    return true;
+                    kandidati.Add((nx, ny));
                 }
             }
         }
-        return false;
+
+        if (kandidati.Count == 0) return false;
+
+        // nahodny vyber umisteni potomka
+        var (px, py) = kandidati[Rng.Next(kandidati.Count)];
+
+        var old = Cells[px, py].Occupant;
+        if (old is Producer)
+        {
+            double e = old.Energy * Config.DecompositionFraction;
+            if (Cells[px, py].Nutrients != null) Cells[px, py].Nutrients.Absorb(e);
+            else Cells[px, py].Nutrients = new Nutrients(e);
+        }
+
+        Cells[px, py].Occupant = offspring;
+        return true;
     }
 
     public bool MoveOrganism(Organism organism, int fromX, int fromY, int toX, int toY)

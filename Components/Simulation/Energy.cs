@@ -14,13 +14,22 @@ public class Nutrients : Energy
 
     public Nutrients(double energyAmount) : base(energyAmount) { }
 
-    public double Drain(double requested) {
+    public double Drain(double requested) // organismus odcerpava energii
+    {
         double drained = Math.Min(requested, EnergyAmount);
         EnergyAmount -= drained;
         return drained;
     }
 
-    public void Decay()
+    public void Absorb(double amount) // pribyva energie z mrtvolky
+{
+    if (amount > 0)
+    {
+        EnergyAmount += amount;
+    }
+}
+
+    public void Decay() //rozklada se XP
     {
         Age++;
         EnergyAmount *= Config.NutrientDecayFactor;   //exponential decay
