@@ -25,8 +25,9 @@
                 {
                     for (int x = 0; x < grid.Width; x++)
                     {
+                        int cx = x, cy = y; //kopie souradnic
                         var occupant = grid.Cells[x, y].Occupant;
-                        <div class="cell @CellBackground(grid.Cells[x, y])">
+                        <div class="cell @CellBackground(grid.Cells[x, y]) @(vybrana == (cx, cy) ?"vybrana" : "")" @onclick="() => Microscope(cx, cy)">
                             @if (AnimalIconPath(occupant) is string path && path != "")
                             {
                                 <img src="@path" alt="" />
@@ -71,6 +72,24 @@
                     <p class="varovani">⚠ Součet pravděpodobností (@ChancesSum.ToString("0.###")) přesahuje 1!</p>
                 }
                 <label>Seed: <input type="number" @bind="seed" /></label>
+                @* "mikroskop" *@
+                @if (vybrana is (int vx, int vy) && grid != null)
+                {
+                    var cell = grid.Cells[vx, vy];
+                    <div class="mikroskop">
+                        <h5>Buňka [@vx, @vy]</h5>
+                        @if (cell.Occupant is Organism o)
+                        {
+                            <p>@o.GetType().Name | E: @((o.Energy/o.EnergyMax*100).ToString("F1"))% | věk: @o.Age</p>
+                            @* jeste neco? *@
+                        }
+                        else { <p>prázdno</p> }
+                        @if (cell.Nutrients != null)
+                        {
+                            <p>Živiny: @cell.Nutrients.EnergyAmount.ToString("F1")</p>
+                        }
+                    </div>
+                }
                 </div>
             <div class="prubezne">
                 <h4>Průběžné zásahy</h4>
@@ -159,6 +178,7 @@
     private bool showSunlight = true;
     private int seed = 29;
     private async Task Fullscreen() => await JS.InvokeVoidAsync("toggleFullscreen");
+    private (int x, int y)? vybrana = null;
     private double predationEfficiency
     {
         get => RuntimeSettings.PredationEfficiency;
@@ -305,6 +325,16 @@
             reproductionEnergyCost = Config.ReproductionEnergyCost * (0.5 + random.NextDouble() * 1.5);
             movementEnergyCost = Config.MovementEnergyCost * (0.5 + random.NextDouble() * 1.5);
             stepEnergyCost = Config.StepEnergyCost * (0.5 + random.NextDouble() * 1.5); 
+        }
+    }
+
+    //Mikroskop
+    private void Microscope(int x, int y)
+    {
+        vybrana = (x, y);
+        lock (safetyLock)
+        {
+            Grid.Tracked = grid?.Cells[x, y].Occupant;   // choose to track
         }
     }
 

@@ -22,8 +22,8 @@ public static class Config
 
     public const double StepEnergyCost = 0.0001; // Basal energy cost for each step of the simulation
     public  const double MovementEnergyCost = 0.0002; // Energy cost for movement
-    public const double ReproductionEnergyCost = 0.3; // Energy cost for reproduction
-    public const double ReproductionEnergyThreshold = 0.8; // Minimum energy level required for reproduction
+    public const double ReproductionEnergyCost = 0.2; // Energy cost for reproduction
+    public const double ReproductionEnergyThreshold = 0.6; // Minimum energy level required for reproduction
     public const double NewbornEnergyFraction = 0.3; // Fraction of maximum energy that a newborn organism starts with
     public const double DecompositionFraction = 0.3; // Fraction of energy turning into nutrients afer death
     public const double NutrientAbsorbtionRate = 0.2; // Amount of the Producer's EnergyMax he can absorb in one step
