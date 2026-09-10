@@ -48,7 +48,7 @@ public abstract class Organism
     }   
     public void Metabolize()
     {
-        UpdateEnergy(-EnergyMax * RuntimeSettings.StepEnergyCost);
+        UpdateEnergy(-Genome.Genes[(int)GeneIndex.StepEnergyCost] * RuntimeSettings.StepEnergyCost);
         UpdateAge();
     }
     
@@ -84,7 +84,7 @@ public abstract class Animal : Organism
 
         if (grid.MoveOrganism(this, x, y, x + dx, y + dy))
         {
-            UpdateEnergy(-RuntimeSettings.MovementEnergyCost*EnergyMax);
+            UpdateEnergy(-RuntimeSettings.MovementEnergyCost * Genome.Genes[(int)GeneIndex.MovementEnergyCost]);
         }
     }
 
