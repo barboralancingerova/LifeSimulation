@@ -6,7 +6,7 @@ public class Grid
     public int Width { get; private set; }
     public int Height { get; private set; }
     public Cell[,] Cells { get; private set; }
-    public Sunlight Sunlight { get; private set; } = new Sunlight(Config.SunlightMaxEnergy); 
+    public Sunlight Sunlight { get; private set; } = new Sunlight(Config.SunlightMaxEnergy/2); 
     public static Random Rng = new Random();
     public Statistics Statistics {get; }= new Statistics(); 
     public static Organism? Tracked;

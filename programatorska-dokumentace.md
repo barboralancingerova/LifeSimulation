@@ -331,8 +331,8 @@ Přehled provedených experimentů:
 
 | # | Seed | Co se ladilo | Výsledek |
 |---|---|---|---|
-|1| | | |
-|2| | | |
+|1| 0 | jak dlouho zvládne simulace běžet bez vymření druhu (jas 100%)| ~ 4.300 kroků (predátoři)|
+|2| 0 | stejně jako 1 ale s polovičním jasem| 20.000+ kroků|
 |3| | | |
 |4| | | |
 |5| | | |
