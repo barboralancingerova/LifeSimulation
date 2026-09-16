@@ -8,7 +8,7 @@ public static class Config
     public const int GridHeight = 50;
     
     // Energy transfer efficiencies
-    public const double PredationEfficiency = 0.3; // Efficiency of energy transfer from prey to predator
+    public const double PredationEfficiency = 0.4; // Efficiency of energy transfer from prey to predator
     public const double PhotosynthesisEfficiency = 0.4; // Efficiency of converting sunlight into energy for producers
     
     // Sunlight and energy parameters
@@ -23,9 +23,9 @@ public static class Config
 
     // Energy costs & thresholds
 
-    public const double StepEnergyCost = 0.0001; // Basal energy cost for each step of the simulation
-    public  const double MovementEnergyCost = 0.0002; // Energy cost for movement
-    public const double ReproductionEnergyCost = 0.2; // Energy cost for reproduction
+    public const double StepEnergyCost = 0.001; // Basal energy cost for each step of the simulation
+    public  const double MovementEnergyCost = 0.01; // Energy cost for movement
+    public const double ReproductionEnergyCost = 0.1; // Energy cost for reproduction
     public const double ReproductionEnergyThreshold = 0.6; // Minimum energy level required for reproduction
     public const double NewbornEnergyFraction = 0.3; // Fraction of maximum energy that a newborn organism starts with
     public const double DecompositionFraction = 0.3; // Fraction of energy turning into nutrients afer death
