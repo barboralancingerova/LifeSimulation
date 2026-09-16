@@ -327,55 +327,70 @@ Závěr / změna kódu nebo parametrů:
 ```
 Dvě upřesnění k položkám šablony: seed platí až od stisknutí Resetu (svět vzniklý při startu aplikace seedem řízen být nemusí), a u životních parametrů se zapisují skutečné hodnoty odečtené z polí rozhraní — nikoli jen jméno presetu, který je nastavil.
 
-Přehled provedených experimentů:
+Některé z provedených experimentů:
 
 | # | Seed | Co se ladilo | Výsledek |
 |---|---|---|---|
 |1| 0 | jak dlouho zvládne simulace běžet bez vymření druhu (jas 100%)| ~ 4.300 kroků (predátoři)|
 |2| 0 | stejně jako 1 ale s polovičním jasem| 20.000+ kroků|
-|3| | | |
-|4| | | |
-|5| | | |
+|3| 0 | iniciační hodnoty: přemnožení predátorů | křivka počtu pred. & býlož. se během 10.000 kroků několikrát protnuly, počty kolísaly kolem středové hodnoty cca 270 jedinců|
+|4| 29 | Scanning radius zvětšen ze 4 na 50 (je to důvod vymírání predátorů?)| Žádný efekt - vyloučeno jako příčina vymírání |
+|5| 29 | Zhasnutí slunce uprostřed běhu vs. před startem | Uprostřed běhu systém dojíždí na zásobách v tělech i půdě (pomalý úpadek); od startu bez slunce producenti vymřou za ~50, predátoři paradoxně přežívají nejdéle, dojídají umírající zbytky |
+|6| 29 |Odolnost vůči změnám slunce: dva zásahy jasem při běhu | Krátké úplné zhasnutí → pružné zotavení; delší období polovičního jasu → postupné vyčerpání a začátek kolapsu; rozdíl mezi odolností vůči krátké poruše a dlouhodobým vyčerpáním |
 
-Náměty vyplývající z kódu: 
+
+Další námšty pro testování:
 a) vliv slunce — při jakém jasu producenti přestanou stíhat rozmnožování
 b) `PredationEfficiency` 0,3 vs. vyšší — kdy býložravci vyhladí producenty
-c) preset *Přemnožení predátorů* (0,2/0,05/0,02)
-d) evoluce vah — porovnat průměrnou energii býložravců na začátku a po N krocích při stejném seedu
+c) evoluce vah — porovnat průměrnou energii býložravců na začátku a po N krocích při stejném seedu
 
 ## 9. Co nebylo dodělané / známé nedostatky
-- Geny `StepEnergyCost` a `MovementEnergyCost` jsou dědičné, ale nepoužité (`Metabolize`/`Move` čtou `RuntimeSettings`). Zamýšlené: individuální náklady na jedince.
-- Mutace se σ v absolutních jednotkách → `AgeMax`/`EnergyMax` se prakticky nevyvíjejí; přirozený krok je relativní σ (procento hodnoty).
-- Vstup NN „energie potravy“ není normalizovaný (rozsah do ~1500), zatímco ostatní vstupy jsou 0–1 → po `tanh` tato složka saturuje.
-- Sekvenční průchod: dvojí akce po pohybu „dopředu“, mrtvoly blokující buňky (kap. 2).
-- Živiny se při nové smrti v buňce přepisují, nesčítají.
-- `Grid.Rng` bez seedu při prvním načtení; statický stav sdílený mezi relacemi.
-- `Statistics.History` roste bez omezení; GUI překresluje 2 500 divů každý krok.
-- Nepoužitý kód: `InitControls.razor`, `RuntimeControls.razor`, `NeuralNetwork` instanční část, `Config.DaysToFullEnergy`, `Grid.PrintStatus`, `Animal.FindMates`.
-- Chybí hlavičky souborů a jednotkové testy.
-- [DOPLNIT: co bylo plánováno a není]
+Následující seznam odděluje vědomá zjednodušení (rozhodnutí s přijatými důsledky), technický dluh (co by si zasloužilo úklid) a záměry, na které nedošlo.
+Vědomé limity návrhu (důsledky rozhodnutí popsaných v kap. 3 a 6):
+    - Artefakty sekvenčního průchodu: dvojí akce zvířete po pohybu ve směru průchodu, mrtvoly krátce blokující buňky (podrobně kap. 2).
+    - Grid.Rng a RuntimeSettings jsou statické — svět vzniklý při prvním načtení stránky neběží pod uživatelským seedem (ten platí až od Resetu) a stav je sdílený mezi případnými souběžnými relacemi (kap. 1.6).
+    - Statistics.History roste po celý běh bez ořezu a rozhraní překresluje všech 2 500 buněk každý krok — obojí je pro zamýšlené délky běhů a velikost mřížky bez praktického dopadu, ale škálování na výrazně větší světy by vyžadovalo klouzavé okno historie a kreslení na canvas.
+Technický dluh:
+    - Vstup sítě „energie potravy" není normalizovaný: zatímco ostatní vstupy leží v rozsahu 0–1, energie kořisti dosahuje stovek až tisíců, takže po průchodu tanh tato složka trvale saturuje na ±1 a síť z ní fakticky čte jen „potrava existuje", nikoli kolik jí je. Oprava je snadná (dělení EnergyMax kořisti), ale změnila by chování všech dosavadních běhů. 
+    - Nepoužitý kód čekající na smazání či rozhodnutí: instanční část NeuralNetwork (používá se jen statický Forward), Grid.PrintStatus (nahrazen mikroskopem) a Animal.FindMates. Většinou pozůstatky starých metod nebo připravené struktury pro plánovaná rozšíření, na která nedošlo.
+Plánováno, nerealizováno:
+    - Relativní mutační σ po genech
+    - den/noc cyklus jako časová modulace slunce
+    - nemoci jako další selekční tlak (teď: Energie, Věk, Kompetice o místo, Hrozby z okolí, Reprodukční práh, ...)
 
 ## 10. Možná rozšíření
-- Zapojit geny nákladů do `Metabolize`/`Move`; relativní σ mutace; normalizace vstupů NN, biasy.
-- Dvoufázový krok (rozhodnutí → aplikace) nebo náhodné pořadí buněk.
-- Výstupy NN pro „jíst / rozmnožit se / zůstat stát“, paměť (rekurentní vstup).
-- Šíření živin do okolí, lokální světlo (stín), toroidní mřížka.
-- Export `History` do CSV, uložení/načtení stavu a genomů, zobrazení „nejlepšího“ genomu.
-- Canvas rendering, ořez historie, instance místo statiky (více simulací vedle sebe).
-- [DOPLNIT]
+Seznam rozšíření je seřazen podle vrstev, kterých se týkají; u každého je naznačeno, co by projektu přineslo.
+
+Evoluce a neuronová síť — rozšíření, která by prohloubila hlavní téma projektu:
+    - Relativní mutační σ (procento hodnoty genu místo absolutní konstanty) by umožnilo evoluci tělesných parametrů AgeMax a EnergyMax, které jsou dnes prakticky neměnné. Spolu s normalizací vstupu „energie potravy" jde o dvě nejmenší změny s největším očekávaným dopadem na dynamiku evoluce.
+    - Rozšířené výstupy sítě (jíst / rozmnožit se / stát) by předaly reflexní rozhodnutí evoluci — zajímavé jako srovnávací experiment: dokáže evoluce znovuobjevit reflexy?
+    - Paměť (rekurentní vstup — část výstupu vrstvy přivedená na vstup dalšího kroku) by umožnila strategie závislé na historii, například systematické prohledávání; výrazně by však zvětšila genom i obtížnost interpretace.
+
+Model světa — bohatší prostředí:
+    - Šíření živin do sousedních buněk a lokální světlo (stíny, gradient); toroidní mřížka by odstranila okrajové efekty
+    - Denní cyklus; vyžaduje rozhodnout vztah k ručnímu posuvníku (amplituda vs. okamžitá hodnota)
+    - Nemoci — přenos kontaktem, dědičná odolnost; koncepčně největší z navrhovaných rozšíření
+Algoritmus a výkon:
+    - Dvoufázový krok (rozhodnutí → aplikace) by odstranil artefakty sekvenčního průchodu — výměnou za nutnost řešit kolize záměrů
+Experimentální nástroje:
+    - Export History do CSV pro analýzu mimo aplikaci (např. v R)
+    - Uložení a načtení stavu světa včetně genomů (dlouhé experimenty na pokračování, sdílení zajímavých stavů)- Zobrazení genomu nejúspěšnějšího jedince nebo průměrného genomu populace
 
 ## 11. Sada testovacích příkladů
-Automatické testy nejsou. Ruční scénáře, u nichž je správný výsledek předem znám:
+Projekt nemá automatické jednotkové testy, jejich roli však plní sada ručních scénářů, u nichž je správné chování odvoditelné předem z pravidel kapitoly 1. Každý scénář se spouští nastavením uvedených hodnot a Resetem; očekávání lze ověřit pohledem na mřížku, křivky grafu a počty. Scénáře pokrývají krajní případy jednotlivých mechanismů — právě v nich se chyby projevují nejzřetelněji (scénář „slunce 0" v minulosti odhalil chybu perpetua mobile v čerpání živin).
 
 | Scénář (nastavení + Reset) | Očekávání |
 |---|---|
-| 0 / 0 / 0 | prázdná mřížka, `Step` nic nemění, počty 0 |
-| jen producenti (0,3 / 0 / 0) | rostou do zaplnění, křivka se ustálí na hodnotě dané věkem 20–60 a místem |
-| jen býložravci (0 / 0,05 / 0) | bez potravy; při výchozích nákladech je energie na hlad nestačí zabít, vymřou stářím nejpozději do 120 kroků |
-| slunce 0, jen producenti | žádná fotosyntéza; producenti vymřou stářím, živiny zmizí |
-| stejný seed + stejné hodnoty, dvakrát Reset | identické křivky |
-| `PredationEfficiency` = 0 | zvířata nikdy nezískají energii z kořisti, ale kořist stále zabíjejí |
-| [DOPLNIT] | |
+| 0 / 0 / 0 | prázdná mřížka; `Step` nic nemění, počty 0, křivky na nule |
+| jen producenti (0,3 / 0 / 0) | růst do zaplnění prostoru; počty poté oscilují kolem nosné kapacity dané místem a generační obměnou (`AgeMax` 40) |
+| jen býložravci (0 / 0,05 / 0) | bez potravy: průměrná energie monotónně klesá, ale při výchozích nákladech na vyhladovění nestačí — vymřou stářím do ~120 kroků; po smrti žádné živiny (energie u dna) |
+| slunce 0, jen producenti | bez fotosyntézy dojedou zásoby půdy a rezervy, vymřou; poté i živiny vyprchají — mřížka zčerná úplně |
+| stejný seed + stejné hodnoty, dvakrát Reset | identické běhy krok po kroku, identické křivky (test determinismu) |
+| `PredationEfficiency` = 0 | predátoři a býložravci zabíjejí, ale nic nezískají: jejich energie klesá jako u hladovění, býložravci ubývají |
+| `ReproductionThreshold` nedosažitelný (práh > 1) | nikdo se nemnoží; populace pouze stárnou a vymírají — test, že reprodukce je jediný zdroj nových jedinců |
+| součet pravděpodobností > 1 v polích inicializace | rozhraní zobrazí varování a zamkne Reset — test validace |
+| slunce na maximum + jen producenti se zaplněnou mřížkou | energie producentů se drží u `EnergyMax` (test horního ořezu), `TotalEnergy` se ustálí — přítok se vyrovná ztrátám |
+| mikroskop: klik na prázdnou buňku / buňku s živinami / organismus | panel zobrazí odpovídající obsah (test diagnostiky) |
 
 ## 12. Závěrečný povzdech
-[DOPLNIT]
+Projekt mi zabral víc času, než jsem čekala — většinu ne psaním nových věcí, ale hledáním chyb ve věcech, o kterých jsem si myslela, že už fungují. Přesto mě práce bavila, hlavně ve chvílích, kdy se simulace poprvé rozběhla a bylo vidět, jak se svět chová. Nakonec se podařilo vyladit i největší porblém - neustále vymírající predátory, takže se splnil můj původní záměr, aby simulaci šlo nechat běžet "neomezeně dlouho", aniž by skončila vymřením některého z druhů. 
