@@ -1,3 +1,5 @@
+// třída Statistics slouží ke sběru dat a zaznamenávaání historie běhu simulace - využívá ji 
+// soubor Charts při vykreslování živých grafů v GUI
 public class Statistics
 {
 

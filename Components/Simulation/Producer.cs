@@ -1,3 +1,5 @@
+// Producenti jsou nejnižší typ organismu; živí se sluneční energií a živinami z půdy, 
+// které zanechávají mrtvé organismy
 public class Producer: Organism
 {
     // Constructor

@@ -1,4 +1,5 @@
-using System.Reflection.Metadata.Ecma335;
+// třída NeuralNetwoek je jednoduchá neuronová síť, která pomáhá potomkům třídy ANimal (Herbivore a Predator)
+// rozhodovat o dalším pohybu v Gridu pomocí ohodnocení okolních polí a výběru nejvýhodnějšího
 
 public class NeuralNetwork
 {

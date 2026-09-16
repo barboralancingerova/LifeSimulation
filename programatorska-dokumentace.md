@@ -123,7 +123,7 @@ pokud !ate → Move(): NN → argmax → pokus o přesun; při obsazené/cizí c
 ## 4. Program — struktura
 
 ### 4.1 Rozdělení
-Simulační jádro (12 souborů, ~1 086 řádků) nemá žádnou závislost na Blazoru; GUI (4 komponenty + CSS, ~551 řádků) drží jednu instanci `Grid` a volá `Step()`. Vše je v globálním namespace. Externí knihovny nejsou; graf je ručně generované SVG. Diagram níže zachycuje simulační model. Globální parametry drží statické třídy Config (defaulty) a RuntimeSettings (laditelné za běhu).
+Simulační jádro (12 souborů) nemá žádnou závislost na Blazoru; GUI (4 komponenty) drží jednu instanci `Grid` a volá `Step()`. Vše je v globálním namespace. Externí knihovny nejsou; graf je ručně generované SVG. Diagram níže zachycuje simulační model. Globální parametry drží statické třídy Config (defaulty) a RuntimeSettings (laditelné za běhu).
 
 ```mermaid
 classDiagram
@@ -175,15 +175,6 @@ classDiagram
 | `NeuralNetwork` | statický `Forward()` | |
 | `Statistics` | `record Snapshot` a `History` — po každém kroku počty, součty energií po druzích, celková energie (vč. živin), intenzita slunce 0–1 | `RecordStep()` |
 
-Hierarchie:
-```
-Organism ── Producer
-    └── Animal ── Herbivore
-              └── Predator
-Genome ── AnimalGenome        Energy ── Nutrients
-                                    └── Sunlight
-```
-[DOPLNIT: případně Mermaid diagram včetně vazeb Grid → Cell → Organism → Genome]
 
 ### 4.3 Datové struktury
 - Mřížka: `Cell[,]` (2D pole, `[x, y]`). Organismy nemají vlastní seznam — existují jen jako `Occupant` buňky; proto se pozice předává do `Act(grid, x, y)` jako parametry a organismus svou polohu nezná.
@@ -201,16 +192,6 @@ Genome ── AnimalGenome        Energy ── Nutrients
 - `Fullscreen` volá JS funkci `toggleFullscreen` (definovaná v [DOPLNIT: soubor]).
 - Komponenty `InitControls.razor` a `RuntimeControls.razor` jsou **nepoužité** — jejich obsah je vložen přímo v `SimulationPage.razor`. Totéž metody `ChangeProducerChance` a spol.
 
-### 4.5 Konvence v kódu
-Každý zdrojový soubor začíná hlavičkou (podle Kryla): [DOPLNIT — zatím v souborech chybí]
-
-```csharp
-// GameOfLife — simulace ekosystému s evolucí
-// [jméno], [ročník / skupina], [semestr]
-// Zápočtový program pro předmět [DOPLNIT]
-```
-
-Identifikátory v jádře anglicky, v GUI a CSS česky (`bezi`, `mrizka`, `tweaky`). Komentáře u konstant popisují význam; u metod ve stylu „co, ne jak“.
 
 ## 5. Alternativní programová řešení
 - **Blazor Server** vs. WebAssembly vs. konzole: server drží simulaci v C# na jednom místě, ladí se snadno, nevyžaduje JS; daň je přenos DOM diffu každý krok a sdílený statický stav. [DOPLNIT důvody, vliv Termuxu]

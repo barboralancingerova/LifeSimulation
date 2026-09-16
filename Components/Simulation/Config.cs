@@ -1,3 +1,6 @@
+// třída Config slouží jako úložiště veškerých konstant, které se po dobu běhu programu nemění
+// a nejsou ani modifikovatelné uživatelem
+
 public static class Config
 {
     // Grid params

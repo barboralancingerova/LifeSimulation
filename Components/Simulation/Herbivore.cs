@@ -1,3 +1,5 @@
+// Herbivore neboli býložravec je potomek třídy Animal:Organism
+// je schopen pohybu po poli, živí se producenty (Producers), utíká před predátory
 public class Herbivore : Animal
 {
     // Constructor

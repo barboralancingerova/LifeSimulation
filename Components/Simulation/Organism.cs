@@ -1,4 +1,6 @@
 using System.Linq;
+// třída Organism umožňuje vytvářet jednotlivé instance organismů na gridu a uchovávat si o nich 
+// důležitá data; rozšířená třída Animal:Organism má navíc schopnost pohybu a složitějšho způsobu reprodukce
 public abstract class Organism
 {
     // Properties

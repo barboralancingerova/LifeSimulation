@@ -1,3 +1,9 @@
+// třída Genome a její metody zajišťují dědičnost a genetickou diversitu napříč všemi organismy
+// v základu s edědí 4 parametry
+// třída AnimalGenome je pak rozšířena o další parametr: pole Weights, které drží vstupní váhy
+// neuronové sítě 
+// každý organismus si pak drží vlastní instanci Genomua z něj se pak i tvoří nové hodnoty pro potomky
+
 public enum GeneIndex
     {
         AgeMax, EnergyMax, StepEnergyCost, MovementEnergyCost

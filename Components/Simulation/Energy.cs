@@ -1,3 +1,6 @@
+// třída Energy slouží k ukládání energie ve formě 
+// 1) nutrientů - ukládají se do Cell
+// 2) slunečního jasu - instance slunce je na gridu 
 public abstract class Energy
     {
         public double EnergyAmount { get; protected set; }

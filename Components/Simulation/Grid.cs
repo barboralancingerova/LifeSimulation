@@ -1,5 +1,5 @@
-using System.Data;
-
+// třída Grid si pamatuje aktuální stav simulace a koordinuje veškeré její dění pomocí metody Step()
+// = krok simulace
 public class Grid 
 {
     public int StepNumber { get; private set; } = 0;

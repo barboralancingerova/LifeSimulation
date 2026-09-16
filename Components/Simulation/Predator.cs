@@ -1,3 +1,4 @@
+// Predítoři jsou schopni pohybu po gridu za potravou nebo partnery, živí se býložravci, nemají přirozeného nepřítele
 class Predator : Animal
 {
     // Constructor
