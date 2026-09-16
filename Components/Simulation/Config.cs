@@ -52,9 +52,9 @@ public static class Config
             public const double HerbivoreEnergyMax = 2000;
             public const double PredatorEnergyMax = 3500;
         // Biodiversity ratio
-            public const double ProducerChance = 0.3;
+            public const double ProducerChance = 0.5;
             public const double HerbivoreChance = 0.03;
-            public const double PredatorChance = 0.01;
+            public const double PredatorChance = 0.02;
 
     // Genetic params
     public const double MutationSigma = 0.05; // 5% standard dev.
