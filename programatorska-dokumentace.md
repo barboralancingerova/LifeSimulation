@@ -125,6 +125,8 @@ pokud !ate → Move(): NN → argmax → pokus o přesun; při obsazené/cizí c
 ### 4.1 Rozdělení
 Simulační jádro (12 souborů, ~1 086 řádků) nemá žádnou závislost na Blazoru; GUI (4 komponenty + CSS, ~551 řádků) drží jednu instanci `Grid` a volá `Step()`. Vše je v globálním namespace. Externí knihovny nejsou; graf je ručně generované SVG. Diagram níže zachycuje simulační model. Globální parametry drží statické třídy Config (defaulty) a RuntimeSettings (laditelné za běhu).
 
+```mermaid
+classDiagram
     %% === Svět ===
     Grid "1" *-- "W×H" Cell : Cells
     Grid *-- Sunlight
@@ -153,6 +155,8 @@ Simulační jádro (12 souborů, ~1 086 řádků) nemá žádnou závislost na B
     class Animal { <<abstract>> }
     class Energy { <<abstract>> }
     class Cell { +int X +int Y }
+```
+
 
 ### 4.2 Třídy jádra
 
