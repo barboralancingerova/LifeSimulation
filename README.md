@@ -4,7 +4,6 @@
 > Autor: Barbora Lancingerová
 > Technologie: C# / .NET 8.0, Blazor Server (InteractiveServer), bez externích knihoven
 
-(main.jpg)
 
 ## Anotace
 
