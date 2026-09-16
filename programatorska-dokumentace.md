@@ -123,7 +123,36 @@ pokud !ate → Move(): NN → argmax → pokus o přesun; při obsazené/cizí c
 ## 4. Program — struktura
 
 ### 4.1 Rozdělení
-Simulační jádro (12 souborů, ~1 086 řádků) nemá žádnou závislost na Blazoru; GUI (4 komponenty + CSS, ~551 řádků) drží jednu instanci `Grid` a volá `Step()`. Vše je v globálním namespace. Externí knihovny nejsou; graf je ručně generované SVG.
+Simulační jádro (12 souborů, ~1 086 řádků) nemá žádnou závislost na Blazoru; GUI (4 komponenty + CSS, ~551 řádků) drží jednu instanci `Grid` a volá `Step()`. Vše je v globálním namespace. Externí knihovny nejsou; graf je ručně generované SVG. Diagram níže zachycuje simulační model. Globální parametry drží statické třídy Config (defaulty) a RuntimeSettings (laditelné za běhu).
+
+    %% === Svět ===
+    Grid "1" *-- "W×H" Cell : Cells
+    Grid *-- Sunlight
+    Grid *-- Statistics
+    Cell --> "0..1" Organism : Occupant
+    Cell --> "0..1" Nutrients : Nutrients
+    Statistics *-- "many" Snapshot : History
+
+    %% === Organismy ===
+    Organism <|-- Producer
+    Organism <|-- Animal
+    Animal <|-- Herbivore
+    Animal <|-- Predator
+
+    %% === Genetika a chování ===
+    Organism *-- Genome
+    Animal *-- AnimalGenome
+    Animal *-- NeuralNetwork
+    Genome <|-- AnimalGenome
+
+    %% === Energie ===
+    Energy <|-- Nutrients
+    Energy <|-- Sunlight
+
+    class Organism { <<abstract>> }
+    class Animal { <<abstract>> }
+    class Energy { <<abstract>> }
+    class Cell { +int X +int Y }
 
 ### 4.2 Třídy jádra
 
